@@ -73,10 +73,21 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 
 	// generate jwt
 	secretBase64 := os.Getenv("JWT_SECRET")
-	accessToken, err := auth.GenerateJWT(account.ID, "strowger", secretBase64)
+	exp_min_str := os.Getenv("JWT_EXP_MINUTES")
+	exp_min, err := strconv.Atoi(exp_min_str)
+	if err != nil {
+		return nil, "", "", err
+	}
+	accessToken, err := auth.GenerateJWT(account.ID, "strowger", secretBase64, exp_min)
+	if err != nil {
+		return nil, "", "", err
+	}
 
 	// generate refresh token
 	refreshToken, refreshTokenHash, err := auth.GenerateRefreshToken()
+	if err != nil {
+		return nil, "", "", err
+	}
 
 	// parse ip
 	ipAddr, err := netip.ParseAddr(ip)
@@ -141,7 +152,12 @@ func (service *service) refresh(ctx context.Context, token string) (string, stri
 
 	// generate new jwt
 	secret := os.Getenv("JWT_SECRET")
-	jwt, err := auth.GenerateJWT(refreshToken.AccountID, "strowger", secret)
+	exp_min_str := os.Getenv("JWT_EXP_MINUTES")
+	exp_min, err := strconv.Atoi(exp_min_str)
+	if err != nil {
+		return "", "", err
+	}
+	jwt, err := auth.GenerateJWT(refreshToken.AccountID, "strowger", secret, exp_min)
 	if err != nil {
 		return "", "", err
 	}

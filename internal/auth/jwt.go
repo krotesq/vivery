@@ -3,21 +3,13 @@ package auth
 import (
 	"encoding/base64"
 	"errors"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateJWT(sub, iss, secretBase64 string) (string, error) {
+func GenerateJWT(sub, iss, secretBase64 string, exp_min int) (string, error) {
 	keyBytes, err := base64.StdEncoding.DecodeString(secretBase64)
-	if err != nil {
-		return "", err
-	}
-
-	exp_min_str := os.Getenv("JWT_EXP_MINUTES")
-	exp_min, err := strconv.Atoi(exp_min_str)
 	if err != nil {
 		return "", err
 	}
