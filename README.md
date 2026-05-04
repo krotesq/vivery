@@ -1,2 +1,2 @@
-# strowger
+# vivery
 Lightweight restreaming platform

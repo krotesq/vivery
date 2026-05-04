@@ -7,7 +7,7 @@ authentication: {}
 authenticationType: null
 description: ''
 headers: []
-name: Strowger
+name: vivery
 encryptionKeyChallenge: null
 settingValidateCertificates: true
 settingFollowRedirects: true

@@ -15,13 +15,13 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 
-	"github.com/krotesq/strowger/internal/account"
-	"github.com/krotesq/strowger/internal/auth"
-	"github.com/krotesq/strowger/internal/config"
-	"github.com/krotesq/strowger/internal/db"
-	"github.com/krotesq/strowger/internal/mediamtx"
-	"github.com/krotesq/strowger/internal/source"
-	"github.com/krotesq/strowger/internal/target"
+	"github.com/krotesq/vivery/internal/account"
+	"github.com/krotesq/vivery/internal/auth"
+	"github.com/krotesq/vivery/internal/config"
+	"github.com/krotesq/vivery/internal/db"
+	"github.com/krotesq/vivery/internal/mediamtx"
+	"github.com/krotesq/vivery/internal/source"
+	"github.com/krotesq/vivery/internal/target"
 )
 
 func main() {

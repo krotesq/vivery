@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"errors"
 	"github.com/go-chi/chi/v5"
-	"github.com/krotesq/strowger/internal/response"
-	"github.com/krotesq/strowger/internal/util"
+	"github.com/krotesq/vivery/internal/response"
+	"github.com/krotesq/vivery/internal/util"
 )
 
 type handler struct {

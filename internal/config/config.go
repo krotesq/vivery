@@ -49,11 +49,11 @@ func Load() (*Config, error) {
 		DatabasePassword: getEnvOrDefault("DATABASE_PASSWORD", ""),
 		DatabaseHost:     getEnvOrDefault("DATABASE_HOST", "localhost"),
 		DatabasePort:     getEnvOrDefault("DATABASE_PORT", "5432"),
-		DatabaseName:     getEnvOrDefault("DATABASE_NAME", "strowger"),
+		DatabaseName:     getEnvOrDefault("DATABASE_NAME", "vivery"),
 
 		JSONWebTokenSecret:       getEnvOrDefault("JWT_SECRET", ""),
 		JSONWebTokenExpireMinutes: jwtExp,
-		JSONWebTokenIssuer:       getEnvOrDefault("JWT_ISSUER", "strowger"),
+		JSONWebTokenIssuer:       getEnvOrDefault("JWT_ISSUER", "vivery"),
 
 		RefreshTokenExpireDays: refreshExp,
 

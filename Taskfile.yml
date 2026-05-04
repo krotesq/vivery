@@ -8,7 +8,7 @@ tasks:
   default:
     desc: Runs the project in dev mode
     cmds:
-      - go run cmd/strowger/main.go
+      - go run cmd/vivery/main.go
 
   infra:
     desc: Runs all needed infra

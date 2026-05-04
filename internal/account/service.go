@@ -6,7 +6,7 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/krotesq/strowger/internal/auth"
+	"github.com/krotesq/vivery/internal/auth"
 )
 
 type service struct {

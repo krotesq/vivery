@@ -3,7 +3,7 @@ package account
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/krotesq/strowger/internal/auth"
+	"github.com/krotesq/vivery/internal/auth"
 )
 
 func RoutesWithPool(pool *pgxpool.Pool, jwtSecret string, jwtIssuer string, jwtExpMin int, refreshExpDays int, bcryptCost int) chi.Router {

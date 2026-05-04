@@ -17,4 +17,4 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - run: go build ./cmd/strowger
+      - run: go build ./cmd/vivery

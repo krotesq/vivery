@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/krotesq/strowger/internal/response"
+	"github.com/krotesq/vivery/internal/response"
 )
 
 type contextKey string
