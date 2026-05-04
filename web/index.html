@@ -1,15 +1,77 @@
 <!DOCTYPE html>
 
 <html>
-        <head>
-            <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        </head>
-        
-        <!-- check for jwt, if not redirect to login, if yes check by getting user account -->
-        <!-- load sources, load targets, display simple controls to configure/start a stream -->
-        <!-- simple forms to add a source and a target -->
-        
+    <head>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    </head>
+
     <body>
-        
+        <div style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; display: flex; gap: 300px;">
+                <div>
+                    <h2>Source</h2>
+                    <div></div>
+                </div>
+
+            <div>
+                <h2>Target</h2>
+                <div></div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", async () => {
+                await checkAuth();
+            });
+
+            async function checkAuth() {
+                const res = await fetch("http://localhost:3000/api/account/me", {
+                    method: "GET",
+                    credentials: "include"
+                });
+
+                if (res.ok) {
+                    console.log("User ist eingeloggt");
+                    return;
+                }
+
+                const refreshed = await refreshToken();
+
+                if (!refreshed) {
+                    redirectToLogin();
+                    return;
+                }
+
+                const res2 = await fetch("http://localhost:3000/api/account/me", {
+                    method: "GET",
+                    credentials: "include"
+                });
+
+                if (!res2.ok) {
+                    redirectToLogin();
+                }
+            }
+
+            async function refreshToken() {
+                try {
+                    const res = await fetch("http://localhost:3000/api/account/refresh", {
+                        method: "POST",
+                        credentials: "include"
+                    });
+
+                    if (!res.ok) return false;
+
+                    console.log("Token refreshed");
+                    return true;
+
+                } catch (err) {
+                    console.error("Refresh Fehler:", err);
+                    return false;
+                }
+            }
+
+            function redirectToLogin() {
+                window.location.href = "login.html";
+            }
+        </script>
     </body>
 </html>
