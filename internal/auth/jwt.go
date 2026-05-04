@@ -8,8 +8,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateJWT(sub, iss, secretBase64 string, exp_min int) (string, error) {
-	keyBytes, err := base64.StdEncoding.DecodeString(secretBase64)
+func GenerateJWT(sub, iss, secret string, expMinutes int) (string, error) {
+	keyBytes, err := base64.StdEncoding.DecodeString(secret)
 	if err != nil {
 		return "", err
 	}
@@ -19,15 +19,15 @@ func GenerateJWT(sub, iss, secretBase64 string, exp_min int) (string, error) {
 		jwt.MapClaims{
 			"iss": iss,
 			"sub": sub,
-			"exp": time.Now().Add(time.Minute * time.Duration(exp_min)).Unix(),
+			"exp": time.Now().Add(time.Minute * time.Duration(expMinutes)).Unix(),
 		},
 	)
 	s, err := t.SignedString(keyBytes)
 	return s, err
 }
 
-func ValidateJWT(tokenString, secretBase64 string) (string, error) {
-	keyBytes, err := base64.StdEncoding.DecodeString(secretBase64)
+func ValidateJWT(tokenString, secret string) (string, error) {
+	keyBytes, err := base64.StdEncoding.DecodeString(secret)
 	if err != nil {
 		return "", err
 	}

@@ -2,7 +2,7 @@ package account
 
 import (
 	"net/http"
-
+	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/krotesq/strowger/internal/response"
 	"github.com/krotesq/strowger/internal/util"
@@ -99,23 +99,33 @@ func (handler *handler) login(w http.ResponseWriter, r *http.Request) {
 	res.SetStatus(201)
 	res.SetSimpleCookie("access_token", accessToken)
 	res.SetSimpleCookie("refresh_token", refreshToken)
-	res.SetHeader("Content-Type", "application/json")
 	res.SetBody("Account logged in", toAccountDTO(account))
 	res.Send()
 }
 
 func (handler *handler) refresh(w http.ResponseWriter, r *http.Request) {
+	// get cookie
 	cookie, err := r.Cookie("refresh_token")
-	refreshToken, jwt, err := handler.service.refresh(r.Context(), cookie.Value)
+	if errors.Is(err, http.ErrNoCookie) {
+		response.Send(w, http.StatusUnauthorized, "Missing JWT", nil)
+		return
+	}
+	if err != nil {
+		response.Send(w, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	// create new refresh token
+	ip := util.GetClientIP(r)
+	refreshToken, jwt, err := handler.service.refresh(r.Context(), cookie.Value, r.UserAgent(), ip)
 	if err != nil {
 		response.Send(w, 500, err.Error(), nil)
 		return
 	}
 
-	// note an mich selber: zu res muss expire hinzugefügt werden (refreshToken.expires_at == cookie.expire)
+	// TODO: zu res muss expire hinzugefügt werden (refreshToken.expires_at == cookie.expire)
 	res := response.NewBuilder(w)
 	res.SetStatus(201)
-	res.SetHeader("Content-Type", "application/json")
 	res.SetSimpleCookie("access_token", jwt)
 	res.SetSimpleCookie("refresh_token", refreshToken)
 	res.SetBody("Token refreshed", nil)
@@ -123,7 +133,18 @@ func (handler *handler) refresh(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *handler) logout(w http.ResponseWriter, r *http.Request) {
-	response.SendWithSimpleCookie(w, http.StatusOK, "Account logged out.", nil, "access_token", "")
+	// revoke refresh token in db if cookie exists
+	cookie, err := r.Cookie("refresh_token")
+	if err == nil && cookie.Value != "" {
+		handler.service.revokeRefreshToken(r.Context(), cookie.Value)
+	}
+
+	res := response.NewBuilder(w)
+	res.DeleteCookie("access_token")
+	res.DeleteCookie("refresh_token")
+	res.SetStatus(http.StatusOK)
+	res.SetBody("Account logged out.", nil)
+	res.Send()
 }
 
 func (handler *handler) me(w http.ResponseWriter, r *http.Request) {

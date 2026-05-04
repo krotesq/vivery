@@ -9,7 +9,10 @@ import (
 func GenerateRefreshToken() (string, []byte, error) {
 	// generate random bytes
 	tokenBytes := make([]byte, 32)
-	rand.Read(tokenBytes)
+	_, err := rand.Read(tokenBytes)
+	if err != nil {
+		return "", nil, err
+	}
 
 	// encode bytes to base64
 	token := base64.StdEncoding.EncodeToString(tokenBytes)

@@ -62,6 +62,17 @@ func (builder *Builder) SetSimpleCookie(name, value string) {
 	})
 }
 
+func (builder *Builder) DeleteCookie(name string) {
+	builder.response.cookies = append(builder.response.cookies, &http.Cookie{
+		Name:     name,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+}
+
 func (builder *Builder) SetHeader(key, value string) {
 	builder.response.headers = append(builder.response.headers, &Header{
 		Key:   key,
@@ -70,6 +81,9 @@ func (builder *Builder) SetHeader(key, value string) {
 }
 
 func (builder *Builder) Send() {
+	// always set content-type to json
+	builder.writer.Header().Set("Content-Type", "application/json")
+
 	// write headers to buffer
 	for _, header := range builder.response.headers {
 		builder.writer.Header().Set(header.Key, header.Value)
@@ -88,23 +102,13 @@ func (builder *Builder) Send() {
 	builder.writer.WriteHeader(builder.response.status)
 
 	// send body
-	json.NewEncoder(builder.writer).Encode(builder.response.body)
-
-	log.Printf("Response: %d - %s - %v", builder.response.status, builder.response.body.Message, builder.response.body.Data)
+	if err := json.NewEncoder(builder.writer).Encode(builder.response.body); err != nil {
+		log.Printf("failed to encode response: %s", err.Error())
+	}
 }
 
 func Send(w http.ResponseWriter, status int, message string, data any) {
 	builder := NewBuilder(w)
-	builder.SetHeader("Content-Type", "application/json")
-	builder.SetStatus(status)
-	builder.SetBody(message, data)
-	builder.Send()
-}
-
-func SendWithSimpleCookie(w http.ResponseWriter, status int, message string, data any, cookieName, cookieValue string) {
-	builder := NewBuilder(w)
-	builder.SetHeader("Content-Type", "application/json")
-	builder.SetSimpleCookie(cookieName, cookieValue)
 	builder.SetStatus(status)
 	builder.SetBody(message, data)
 	builder.Send()

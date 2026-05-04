@@ -6,7 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -14,6 +17,7 @@ import (
 
 	"github.com/krotesq/strowger/internal/account"
 	"github.com/krotesq/strowger/internal/auth"
+	"github.com/krotesq/strowger/internal/config"
 	"github.com/krotesq/strowger/internal/db"
 	"github.com/krotesq/strowger/internal/mediamtx"
 	"github.com/krotesq/strowger/internal/source"
@@ -22,9 +26,15 @@ import (
 
 func main() {
 
+	// load config
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	// connect to database
 	ctx := context.Background()
-	pool, err := db.Connect(ctx)
+	pool, err := db.Connect(ctx, cfg.DatabaseUser, cfg.DatabasePassword, cfg.DatabaseHost, cfg.DatabasePort, cfg.DatabaseName)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %s", err.Error())
 	}
@@ -52,11 +62,11 @@ func main() {
 	// the account router has public and protected routes so we
 	// mount the account router seperate and configure auth inside
 	// we could move the /login, /register, /logout & /reset to the auth package sometime
-	routerApi.Mount("/account", account.RoutesWithPool(pool))
+	routerApi.Mount("/account", account.RoutesWithPool(pool, cfg.JSONWebTokenSecret, cfg.JSONWebTokenIssuer, cfg.JSONWebTokenExpireMinutes, cfg.RefreshTokenExpireDays, cfg.BcryptCost))
 
 	// protected routes
 	routerApi.Group(func(r chi.Router) {
-		r.Use(auth.Auth)
+		r.Use(auth.Auth(cfg.JSONWebTokenSecret))
 		r.Mount("/source", source.RoutesWithPool(pool))
 		r.Mount("/target", target.RoutesWithPool(pool))
 		r.Mount("/mediamtx", mediamtx.RoutesWithPool(pool))
@@ -74,11 +84,32 @@ func main() {
 	router.Mount("/api", routerApi)
 	router.Mount("/", routerWeb)
 
-	// run server
-	host := os.Getenv("HOST")
-	port := os.Getenv("PORT")
-	log.Printf("Server running at %s:%s", host, port)
-	if err := http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), router); err != nil {
-		log.Fatalf("error: %s", err.Error())
+	// run server with graceful shutdown
+	server := &http.Server{
+		Addr:    fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+		Handler: router,
 	}
+
+	go func() {
+		log.Printf("Server running at %s:%s", cfg.Host, cfg.Port)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("error: %s", err.Error())
+		}
+	}()
+
+	// wait for interrupt signal
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("shutting down server...")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("server forced to shutdown: %s", err.Error())
+	}
+
+	log.Println("server stopped")
 }

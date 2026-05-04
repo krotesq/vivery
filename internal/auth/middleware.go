@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/krotesq/strowger/internal/response"
 )
@@ -23,33 +22,34 @@ func AccountIDFromContext(ctx context.Context) (string, bool) {
 	return id, ok
 }
 
-func Auth(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// get jwt cookie from request
-		cookie, err := r.Cookie("access_token")
-		if errors.Is(err, http.ErrNoCookie) {
-			response.Send(w, http.StatusUnauthorized, "Missing JWT", nil)
-			return
-		}
-		if err != nil {
-			log.Println(err.Error())
-			response.Send(w, http.StatusInternalServerError, err.Error(), nil)
-			return
-		}
+func Auth(jwtSecret string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// get jwt cookie from request
+			cookie, err := r.Cookie("access_token")
+			if errors.Is(err, http.ErrNoCookie) {
+				response.Send(w, http.StatusUnauthorized, "Missing JWT", nil)
+				return
+			}
+			if err != nil {
+				log.Println(err.Error())
+				response.Send(w, http.StatusInternalServerError, err.Error(), nil)
+				return
+			}
 
-		// verify jwt
-		secretBase64 := os.Getenv("JWT_SECRET")
-		sub, err := ValidateJWT(cookie.Value, secretBase64)
-		if err != nil { 
-			response.Send(w, http.StatusUnauthorized, "Auth failed", nil)
-			return
-		}
+			// verify jwt
+			sub, err := ValidateJWT(cookie.Value, jwtSecret)
+			if err != nil {
+				response.Send(w, http.StatusUnauthorized, "Auth failed", nil)
+				return
+			}
 
-		log.Printf("User %s authorized with jwt\n", sub)
+			log.Printf("User %s authorized with jwt\n", sub)
 
-		ctx := WithAccountID(r.Context(), sub)
+			ctx := WithAccountID(r.Context(), sub)
 
-		// run next handler
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+			// run next handler
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
 }

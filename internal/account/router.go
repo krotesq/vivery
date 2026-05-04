@@ -6,12 +6,12 @@ import (
 	"github.com/krotesq/strowger/internal/auth"
 )
 
-func RoutesWithPool(pool *pgxpool.Pool) chi.Router {
+func RoutesWithPool(pool *pgxpool.Pool, jwtSecret string, jwtIssuer string, jwtExpMin int, refreshExpDays int, bcryptCost int) chi.Router {
 
 	router := chi.NewRouter()
 
 	repository := newRepository(pool)
-	service := newService(repository)
+	service := newService(repository, jwtSecret, jwtIssuer, jwtExpMin, refreshExpDays, bcryptCost)
 	handler := newHandler(service)
 
 	// public
@@ -21,7 +21,7 @@ func RoutesWithPool(pool *pgxpool.Pool) chi.Router {
 
 	// protected
 	router.Group(func(r chi.Router) {
-		r.Use(auth.Auth)
+		r.Use(auth.Auth(jwtSecret))
 		r.Post("/", handler.create)
 		r.Get("/{id}", handler.findByID)
 		r.Patch("/{id}/deactivate", handler.deactivateByID)
