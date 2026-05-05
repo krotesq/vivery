@@ -1,4 +1,4 @@
-module github.com/krotesq/strowger
+module github.com/krotesq/vivery
 
 go 1.26.2
 

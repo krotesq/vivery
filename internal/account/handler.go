@@ -2,8 +2,10 @@ package account
 
 import (
 	"net/http"
+	"errors"
 	"github.com/go-chi/chi/v5"
-	"github.com/krotesq/strowger/internal/util"
+	"github.com/krotesq/vivery/internal/response"
+	"github.com/krotesq/vivery/internal/util"
 )
 
 type handler struct {
@@ -14,38 +16,142 @@ func newHandler(service *service) *handler {
 	return &handler{service: service}
 }
 
-func (handler *handler) findByUsername(w http.ResponseWriter, r *http.Request) {
-	username := chi.URLParam(r, "username")
-	account, err := handler.service.findByUsername(r.Context(), username)
-	if err != nil {
-		util.NewResponse(404, "account not found", nil).Send(w)
+func (handler *handler) create(w http.ResponseWriter, r *http.Request) {
+	var createDTO createDTO
+	if err := util.ParseBody(r.Body, &createDTO); err != nil {
+		response.Send(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-	
-	util.NewResponse(200, "found account", toAccountDTO(account)).Send(w)
+
+	account, err := handler.service.create(r.Context(), createDTO.Username, createDTO.Password)
+	if err != nil {
+		response.Send(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	response.Send(w, http.StatusOK, "Account created", toAccountDTO(account))
 }
 
+func (handler *handler) findByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	account, err := handler.service.findByID(r.Context(), id)
+	if err != nil {
+		response.Send(w, http.StatusNotFound, "Account not found", nil)
+		return
+	}
+
+	response.Send(w, http.StatusOK, "Account found", toAccountDTO(account))
+}
+
+func (handler *handler) deleteByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	account, err := handler.service.deleteByID(r.Context(), id)
+	if err != nil {
+		response.Send(w, http.StatusNotFound, "Account not found", nil)
+		return
+	}
+
+	response.Send(w, http.StatusOK, "Account deleted", toAccountDTO(account))
+}
+
+func (handler *handler) deactivateByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	account, err := handler.service.deactivateByID(r.Context(), id)
+	if err != nil {
+		response.Send(w, http.StatusNotFound, "Account not found", nil)
+		return
+	}
+
+	response.Send(w, http.StatusOK, "Account deactivated", toAccountDTO(account))
+}
+
+func (handler *handler) activateByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	account, err := handler.service.activateByID(r.Context(), id)
+	if err != nil {
+		response.Send(w, http.StatusNotFound, "Account not found", nil)
+		return
+	}
+
+	response.Send(w, http.StatusOK, "Account activated", toAccountDTO(account))
+}
 
 func (handler *handler) login(w http.ResponseWriter, r *http.Request) {
-	var loginData loginDto
-	if err := util.ParseBody(r.Body, &loginData); err != nil {
-		util.NewResponse(400, err.Error(), nil).Send(w)
+	var loginDTO loginDTO
+	if err := util.ParseBody(r.Body, &loginDTO); err != nil {
+		response.Send(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-	
-	s, err := handler.service.login(r.Context(), loginData.Username, loginData.Password)
-	if err != nil {
-		util.NewResponse(401, err.Error(), nil).Send(w)
-		return
-	}
-	
-	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
-		Value:    s,
-		Path:     "/",
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	})
 
-	util.NewResponse(200, "logged in", nil).Send(w)
+	ip := util.GetClientIP(r)
+
+	account, accessToken, refreshToken, err := handler.service.login(r.Context(), loginDTO.Username, loginDTO.Password, r.UserAgent(), ip)
+	if err != nil {
+		response.Send(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	res := response.NewBuilder(w)
+	res.SetStatus(201)
+	res.SetSimpleCookie("access_token", accessToken)
+	res.SetSimpleCookie("refresh_token", refreshToken)
+	res.SetBody("Account logged in", toAccountDTO(account))
+	res.Send()
+}
+
+func (handler *handler) refresh(w http.ResponseWriter, r *http.Request) {
+	// get cookie
+	cookie, err := r.Cookie("refresh_token")
+	if errors.Is(err, http.ErrNoCookie) {
+		response.Send(w, http.StatusUnauthorized, "Missing JWT", nil)
+		return
+	}
+	if err != nil {
+		response.Send(w, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	// create new refresh token
+	ip := util.GetClientIP(r)
+	refreshToken, jwt, err := handler.service.refresh(r.Context(), cookie.Value, r.UserAgent(), ip)
+	if err != nil {
+		response.Send(w, 500, err.Error(), nil)
+		return
+	}
+
+	// TODO: zu res muss expire hinzugefügt werden (refreshToken.expires_at == cookie.expire)
+	res := response.NewBuilder(w)
+	res.SetStatus(201)
+	res.SetSimpleCookie("access_token", jwt)
+	res.SetSimpleCookie("refresh_token", refreshToken)
+	res.SetBody("Token refreshed", nil)
+	res.Send()
+}
+
+func (handler *handler) logout(w http.ResponseWriter, r *http.Request) {
+	// revoke refresh token in db if cookie exists
+	cookie, err := r.Cookie("refresh_token")
+	if err == nil && cookie.Value != "" {
+		handler.service.revokeRefreshToken(r.Context(), cookie.Value)
+	}
+
+	res := response.NewBuilder(w)
+	res.DeleteCookie("access_token")
+	res.DeleteCookie("refresh_token")
+	res.SetStatus(http.StatusOK)
+	res.SetBody("Account logged out.", nil)
+	res.Send()
+}
+
+func (handler *handler) me(w http.ResponseWriter, r *http.Request) {
+	account, err := handler.service.me(r.Context())
+	if err != nil {
+		response.Send(w, http.StatusInternalServerError, "Unable to load account.", nil)
+		return
+	}
+	response.Send(w, http.StatusOK, "Account found.", toAccountDTO(account))
 }

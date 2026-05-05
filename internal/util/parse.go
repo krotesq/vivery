@@ -2,17 +2,16 @@ package util
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 )
 
-// this function takes any type as dst, but usually struct
-// can be called like this: ParseBody(r.Body, &rb)
-// 
+// ParseBody decodes a JSON body into dst.
 func ParseBody[T any](body io.Reader, dst *T) error {
+	if body == nil {
+		return errors.New("request body is empty")
+	}
 	dec := json.NewDecoder(body)
 	dec.DisallowUnknownFields()
-	if err := dec.Decode(dst); err != nil {
-		return err
-	}
-	return nil
+	return dec.Decode(dst)
 }

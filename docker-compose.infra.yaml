@@ -1,7 +1,7 @@
 services:
   mediamtx:
     image: bluenviron/mediamtx:latest
-    container_name: strowger-mediamtx
+    container_name: vivery-mediamtx
     restart: unless-stopped
     ports:
       # RTSP
@@ -25,25 +25,25 @@ services:
 
   postgres:
     image: postgres:17
-    container_name: strowger-postgres
+    container_name: vivery-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: strowger
-      POSTGRES_PASSWORD: strowger
-      POSTGRES_DB: strowger
+      POSTGRES_USER: vivery
+      POSTGRES_PASSWORD: vivery
+      POSTGRES_DB: vivery
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U strowger"]
+      test: ["CMD-SHELL", "pg_isready -U vivery"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   adminer:
     image: adminer:latest
-    container_name: strowger-adminer
+    container_name: vivery-adminer
     restart: unless-stopped
     ports:
       - "8080:8080"
