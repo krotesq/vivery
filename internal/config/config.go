@@ -16,9 +16,9 @@ type Config struct {
 	DatabasePort     string
 	DatabaseName     string
 
-	JSONWebTokenSecret       string
+	JSONWebTokenSecret        string
 	JSONWebTokenExpireMinutes int
-	JSONWebTokenIssuer       string
+	JSONWebTokenIssuer        string
 
 	RefreshTokenExpireDays int
 
@@ -51,9 +51,9 @@ func Load() (*Config, error) {
 		DatabasePort:     getEnvOrDefault("DATABASE_PORT", "5432"),
 		DatabaseName:     getEnvOrDefault("DATABASE_NAME", "vivery"),
 
-		JSONWebTokenSecret:       getEnvOrDefault("JWT_SECRET", ""),
+		JSONWebTokenSecret:        getEnvOrDefault("JWT_SECRET", ""),
 		JSONWebTokenExpireMinutes: jwtExp,
-		JSONWebTokenIssuer:       getEnvOrDefault("JWT_ISSUER", "vivery"),
+		JSONWebTokenIssuer:        getEnvOrDefault("JWT_ISSUER", "vivery"),
 
 		RefreshTokenExpireDays: refreshExp,
 
