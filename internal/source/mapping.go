@@ -1,8 +1,8 @@
 package source
 
 // takes an source and returns the source dto
-func toSourceDto(source *source) sourceDto {
-	return sourceDto{
+func toSourceDTO(source *source) sourceDTO {
+	return sourceDTO{
 		ID:           source.ID,
 		Name:         source.Name,
 		Description:  source.Description,
@@ -12,8 +12,8 @@ func toSourceDto(source *source) sourceDto {
 	}
 }
 
-func toRtmpDto(rtmp *rtmp) rtmpDto {
-	return rtmpDto{
+func toRtmpDTO(rtmp *rtmp) rtmpDTO {
+	return rtmpDTO{
 		SourceID:  rtmp.SourceID,
 		URL:       rtmp.URL,
 		StreamKey: rtmp.StreamKey,

@@ -1,0 +1,33 @@
+type: http_request
+model: http_request
+id: rq_sStbpY7ygW
+createdAt: 2026-05-05T21:27:31.687694052
+updatedAt: 2026-05-06T18:05:07.123343745
+workspaceId: wk_TU49JZpjpe
+folderId: fl_C2gZXDHCRd
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "source": {
+        "name": "test",
+        "description": "test description",
+      },
+      "rtmp": {
+        "url": "localhost:1935/test",
+        "stream_key": "testkey"
+      }
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: G3hXPhQHue
+method: POST
+name: ''
+sortPriority: 2000.0
+url: http://localhost:3000/api/source/rtmp
+urlParameters: []

@@ -18,10 +18,20 @@ func newRepository(pool *pgxpool.Pool) *repository {
 	return &repository{pool: pool}
 }
 
-func (repository *repository) findWithRtmpByID(ctx context.Context, id string) (*source, *rtmp, error) {
+func (repository *repository) findAll(ctx context.Context, accountID string) ([]source, error) {
+	var sources []source
+	const query = `SELECT id, name, description, source_type_id, account_id, created_at FROM source WHERE account_id = $1`
+	if err := pgxscan.Select(ctx, repository.pool, &sources, query, accountID); err != nil {
+		return []source{}, err
+	}
+
+	return sources, nil
+}
+
+func (repository *repository) findWithRtmpByID(ctx context.Context, id string, accountID string) (*source, *rtmp, error) {
 	var _source source
-	const sourceQuery = `SELECT uuid, name, description, source_type_id, account_id, created_at FROM source WHERE uuid = $1`
-	if err := pgxscan.Get(ctx, repository.pool, &_source, sourceQuery, id); err != nil {
+	const sourceQuery = `SELECT id, name, description, source_type_id, account_id, created_at FROM source WHERE id = $1 AND account_id = $2`
+	if err := pgxscan.Get(ctx, repository.pool, &_source, sourceQuery, id, accountID); err != nil {
 		return &source{}, &rtmp{}, err
 	}
 
@@ -34,7 +44,7 @@ func (repository *repository) findWithRtmpByID(ctx context.Context, id string) (
 	return &_source, &_rtmp, nil
 }
 
-func (repository *repository) createWithRtmp(ctx context.Context, name string, description string, accountID string, url string, stream_key string) (*source, *rtmp, error) {
+func (repository *repository) createWithRtmp(ctx context.Context, name string, description string, url string, stream_key string, accountID string) (*source, *rtmp, error) {
 	tx, err := repository.pool.Begin(ctx)
 	if err != nil {
 		return &source{}, &rtmp{}, err
@@ -55,7 +65,7 @@ func (repository *repository) createWithRtmp(ctx context.Context, name string, d
 				$3,
 				$4
 			)
-			RETURNING uuid, name, description, source_type_id, account_id, created_at
+			RETURNING id, name, description, source_type_id, account_id, created_at
 		`
 	var _source source
 	if err := pgxscan.Get(ctx, tx, &_source, sourceQuery, name, description, sourceType.ID, accountID); err != nil {
@@ -79,12 +89,12 @@ func (repository *repository) createWithRtmp(ctx context.Context, name string, d
 	return &_source, &_rtmp, err
 }
 
-func (repository *repository) deleteByID(ctx context.Context, id string) error {
+func (repository *repository) deleteByID(ctx context.Context, id string, accountID string) error {
 	const query = `
 		DELETE FROM source
-		WHERE uuid = $1
+		WHERE id = $1 AND account_id = $2
 	`
-	cmdTag, err := repository.pool.Exec(ctx, query, id)
+	cmdTag, err := repository.pool.Exec(ctx, query, id, accountID)
 
 	if cmdTag.RowsAffected() == 0 {
 		return sql.ErrNoRows

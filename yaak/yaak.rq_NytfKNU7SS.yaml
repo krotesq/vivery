@@ -1,0 +1,27 @@
+type: http_request
+model: http_request
+id: rq_NytfKNU7SS
+createdAt: 2026-05-06T17:56:12.665446017
+updatedAt: 2026-05-06T18:04:24.249217344
+workspaceId: wk_TU49JZpjpe
+folderId: fl_C2gZXDHCRd
+authentication: {}
+authenticationType: null
+body:
+  text: ''
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: G3hXPhQHue
+method: GET
+name: localhost:3000/api/source/rtmp Copy 3
+sortPriority: 0.0
+url: http://localhost:3000/api/source/
+urlParameters:
+- enabled: true
+  name: ''
+  value: ''
+  id: T8sav4MNUc

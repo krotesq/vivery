@@ -2,8 +2,8 @@ package source
 
 import "time"
 
-type sourceDto struct {
-	ID           string    `json:"uuid"`
+type sourceDTO struct {
+	ID           string    `json:"id"`
 	Name         string    `json:"name"`
 	Description  string    `json:"description"`
 	SourceTypeID string    `json:"sourceTypeId"`
@@ -11,15 +11,15 @@ type sourceDto struct {
 	CreatedAt    time.Time `json:"createdAt"`
 }
 
-type rtmpDto struct {
+type rtmpDTO struct {
 	SourceID  string    `json:"sourceId"`
 	URL       string    `json:"url"`
-	StreamKey string    `json:"key"`
+	StreamKey string    `json:"stream_key"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-type sourceWithDetailsDto struct {
-	Source sourceDto `json:"source"`
+type sourceWithDetailsDTO struct {
+	Source sourceDTO `json:"source"`
 	// add all available types here
-	Rtmp *rtmpDto `json:"rtmp"`
+	Rtmp *rtmpDTO `json:"rtmp"`
 }
