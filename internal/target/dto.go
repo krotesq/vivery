@@ -2,8 +2,8 @@ package target
 
 import "time"
 
-type targetDto struct {
-	ID           string    `json:"uuid"`
+type targetDTO struct {
+	ID           string    `json:"id"`
 	Name         string    `json:"name"`
 	Description  string    `json:"description"`
 	TargetTypeID string    `json:"targetTypeId"`
@@ -11,15 +11,15 @@ type targetDto struct {
 	CreatedAt    time.Time `json:"createdAt"`
 }
 
-type rtmpDto struct {
+type rtmpDTO struct {
 	TargetID  string    `json:"targetId"`
 	URL       string    `json:"url"`
-	StreamKey string    `json:"key"`
+	StreamKey string    `json:"stream_key"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-type targetWithDetailsDto struct {
-	Target targetDto `json:"target"`
+type targetWithDetailsDTO struct {
+	Target targetDTO `json:"target"`
 	// add all available types here
-	Rtmp *rtmpDto `json:"rtmp"`
+	Rtmp *rtmpDTO `json:"rtmp"`
 }

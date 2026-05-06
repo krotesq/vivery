@@ -1,8 +1,8 @@
 package target
 
-// takes an target and returns the target dto
-func toTargetDto(target *target) targetDto {
-	return targetDto{
+// takes a target and returns the target DTO
+func toTargetDTO(target *target) targetDTO {
+	return targetDTO{
 		ID:           target.ID,
 		Name:         target.Name,
 		Description:  target.Description,
@@ -12,8 +12,8 @@ func toTargetDto(target *target) targetDto {
 	}
 }
 
-func toRtmpDto(rtmp *rtmp) rtmpDto {
-	return rtmpDto{
+func toRtmpDTO(rtmp *rtmp) rtmpDTO {
+	return rtmpDTO{
 		TargetID:  rtmp.TargetID,
 		URL:       rtmp.URL,
 		StreamKey: rtmp.StreamKey,

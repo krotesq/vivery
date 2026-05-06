@@ -1,10 +1,10 @@
 type: http_request
 model: http_request
-id: rq_4tYjRWTiec
-createdAt: 2026-05-06T17:38:17.840663509
-updatedAt: 2026-05-06T18:45:51.773821730
+id: rq_RfbaeRXamc
+createdAt: 2026-05-06T18:44:27.746892567
+updatedAt: 2026-05-06T18:48:35.131129875
 workspaceId: wk_TU49JZpjpe
-folderId: fl_C2gZXDHCRd
+folderId: fl_Ddbs3yDN22
 authentication: {}
 authenticationType: null
 body:
@@ -19,7 +19,7 @@ headers:
 method: DELETE
 name: localhost:3000/api/source/rtmp Copy 2
 sortPriority: 3000.0
-url: http://localhost:3000/api/source/dd4d0bce-bf34-4a47-b4a8-f103e7bfb9ee
+url: http://localhost:3000/api/target/5b2ebe83-5fc0-4d6d-b382-de7b84a5bfda
 urlParameters:
 - enabled: true
   name: ''
