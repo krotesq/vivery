@@ -6,71 +6,244 @@
     </head>
 
     <body>
-        <div style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; display: flex; gap: 300px;">
-                <div>
+        <div style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
+            <div style="display: flex; gap: 50px; height: 50%;">
+                <button style="height: 50px; margin-top: 50px;" onclick="refresh()">Refresh</button>
+                <div style="overflow-y: scroll; width: 50%;">
                     <h2>Source</h2>
-                    <div></div>
+                    <table id="sourceTable">
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>AccountId</th>
+                        </tr>
+                    </table>
+                    <div style="display: flex; margin-top: 10px;">
+                        <input placeholder="id" id="sourceId"/>
+                        <button onclick="deleteSource(sourceId)">Delete</button>
+                    </div>
+                    <div style="display: flex; margin-top: 10px; width: 70%; gap: 10px;">
+                        <div>
+                            <input placeholder="Name" id="sourceName" style="width: 100%;"/>
+                            <input placeholder="Description" id="sourceDescription" style="width: 100%;"/>
+                        </div>
+                        <div>
+                            <input placeholder="StreamUrl" id="sourceStreamUrl" style="width: 100%;"/>
+                            <input placeholder="StreamKey" id="sourceStreamKey" style="width: 100%;"/>
+                        </div>
+                        <button onclick="createSource(sourceName.value, sourceDescription.value, sourceStreamUrl.value, sourceStreamKey.value)">Add</button>
+                    </div>
                 </div>
-
-            <div>
-                <h2>Target</h2>
-                <div></div>
+                <div style="overflow-y: scroll; width: 50%;">
+                    <h2>Target</h2>
+                    <table id="targetTable">
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>AccountId</th>
+                        </tr>
+                    </table>
+                    <div style="display: flex; margin-top: 10px;">
+                        <input placeholder="id" id="targetId"/>
+                        <button onclick="deleteTarget(targetId)">Delete</button>
+                    </div>
+                    <div style="display: flex; margin-top: 10px; width: 70%; gap: 10px;">
+                        <div>
+                            <input placeholder="Name" id="targetName" style="width: 100%;"/>
+                            <input placeholder="Description" id="targetDescription" style="width: 100%;"/>
+                        </div>
+                        <div>
+                            <input placeholder="StreamUrl" id="targetStreamUrl" style="width: 100%;"/>
+                            <input placeholder="StreamKey" id="targetStreamKey" style="width: 100%;"/>
+                        </div>
+                        <button onclick="createTarget(targetName.value, targetDescription.value, targetStreamUrl.value, targetStreamKey.value)">Add</button>
+                    </div>
+                </div>
+            </div>
+            <div style="border-bottom: 0.5px solid black; margin: 5px;"></div>
+            <div style="width: 100%; height: calc(50% - 11px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; overflow-y: scroll;">
+                <input placeholder="StreamUrlEndung" id="streamUrlEnd" onchange="loadStream(streamUrlEnd.value)">
+                <video id="video" controls width="600"></video>
             </div>
         </div>
 
+        <style>
+            table, td {
+                border: 1px solid;
+            }
+        </style>
+
+        <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
         <script>
+            function loadStream(urlEnd) {
+                const video = document.getElementById('video');
+                const videoSrc = `http://mediamtx.krotesq.com:8888/${urlEnd}/index.m3u8`;
+    
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+    
+                    hls.loadSource(videoSrc);
+                    hls.attachMedia(video);
+    
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        video.play();
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = videoSrc;
+    
+                    video.addEventListener('loadedmetadata', () => {
+                        video.play();
+                    });
+                }
+            }
+        </script>
+
+        <script>
+            const API_URL = "http://localhost:3000/api";
+            const TABLE_COLUMNS = ["id", "name", "description", "accountId"];
+            const TYPES = {
+                source: {
+                    tableId: "sourceTable",
+                    fields: ["sourceName", "sourceDescription", "sourceStreamUrl", "sourceStreamKey"]
+                },
+                target: {
+                    tableId: "targetTable",
+                    fields: ["targetName", "targetDescription", "targetStreamUrl", "targetStreamKey"]
+                }
+            };
+
             document.addEventListener("DOMContentLoaded", async () => {
-                await checkAuth();
+                if (await checkAuth()) {
+                    await refresh();
+                }
             });
 
+            async function api(path, options = {}) {
+                const res = await fetch(`${API_URL}${path}`, {
+                    credentials: "include",
+                    ...options,
+                    headers: {
+                        ...(options.body ? { "Content-Type": "application/json" } : {}),
+                        ...options.headers
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error(`${options.method || "GET"} ${path} failed with ${res.status}`);
+                }
+
+                return res.status === 204 ? null : res.json();
+            }
+
             async function checkAuth() {
-                const res = await fetch("http://localhost:3000/api/account/me", {
-                    method: "GET",
-                    credentials: "include"
-                });
-
-                if (res.ok) {
-                    console.log("User ist eingeloggt");
-                    return;
-                }
-
-                const refreshed = await refreshToken();
-
-                if (!refreshed) {
-                    redirectToLogin();
-                    return;
-                }
-
-                const res2 = await fetch("http://localhost:3000/api/account/me", {
-                    method: "GET",
-                    credentials: "include"
-                });
-
-                if (!res2.ok) {
-                    redirectToLogin();
+                try {
+                    await api("/account/me");
+                    return true;
+                } catch {
+                    try {
+                        await api("/account/refresh", { method: "POST" });
+                        await api("/account/me");
+                        return true;
+                    } catch (err) {
+                        console.error("Auth Fehler:", err);
+                        window.location.href = "login.html";
+                        return false;
+                    }
                 }
             }
 
-            async function refreshToken() {
+            async function refresh() {
+                clearTable("source");
+                clearTable("target");
+                await Promise.all([loadSources(), loadTargets()]);
+            }
+
+            function clearTable(type) {
+                const table = document.getElementById(TYPES[type].tableId);
+                table.querySelectorAll("tr:not(:first-child)").forEach(row => row.remove());
+            }
+
+            function appendRow(type, item) {
+                const row = document.createElement("tr");
+
+                TABLE_COLUMNS.forEach(column => {
+                    const cell = document.createElement("td");
+                    cell.textContent = item[column] || "";
+                    row.appendChild(cell);
+                });
+
+                document.getElementById(TYPES[type].tableId).appendChild(row);
+            }
+
+            async function loadItems(type) {
                 try {
-                    const res = await fetch("http://localhost:3000/api/account/refresh", {
+                    const body = await api(`/${type}/`);
+                    (body.data || []).forEach(item => appendRow(type, item));
+                } catch (err) {
+                    console.error(`Fehler beim Laden von ${type}:`, err);
+                }
+            }
+
+            async function deleteItem(type, input) {
+                const id = input.value.trim();
+                if (!id) return;
+
+                try {
+                    await api(`/${type}/${id}`, { method: "DELETE" });
+                    input.value = "";
+                    refresh();
+                } catch (err) {
+                    console.error(`Fehler beim Löschen von ${type}:`, err);
+                }
+            }
+
+            async function createItem(type, name, description, url, key) {
+                if (!name || !description || !url || !key) {
+                    console.error("Nicht alle Daten angegeben!");
+                    return;
+                }
+
+                try {
+                    const body = await api(`/${type}/rtmp`, {
                         method: "POST",
-                        credentials: "include"
+                        body: JSON.stringify({
+                            [type]: { name, description },
+                            rtmp: { url, stream_key: key }
+                        })
                     });
 
-                    if (!res.ok) return false;
-
-                    console.log("Token refreshed");
-                    return true;
-
+                    appendRow(type, body.data[type]);
+                    TYPES[type].fields.forEach(id => document.getElementById(id).value = "");
                 } catch (err) {
-                    console.error("Refresh Fehler:", err);
-                    return false;
+                    console.error(`Fehler beim Erstellen von ${type}:`, err);
                 }
             }
 
-            function redirectToLogin() {
-                window.location.href = "login.html";
+            function loadSources() {
+                return loadItems("source");
+            }
+
+            function loadTargets() {
+                return loadItems("target");
+            }
+
+            function deleteSource(id) {
+                return deleteItem("source", id);
+            }
+
+            function deleteTarget(id) {
+                return deleteItem("target", id);
+            }
+
+            function createSource(...values) {
+                return createItem("source", ...values);
+            }
+
+            function createTarget(...values) {
+                return createItem("target", ...values);
             }
         </script>
     </body>
