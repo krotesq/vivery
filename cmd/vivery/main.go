@@ -86,8 +86,11 @@ func main() {
 
 	// run server with graceful shutdown
 	server := &http.Server{
-		Addr:    fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
-		Handler: router,
+		Addr:         fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+		Handler:      router,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
 
 	go func() {

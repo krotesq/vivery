@@ -1,7 +1,10 @@
 package account
 
 import (
+	"time"
+
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/httprate"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/krotesq/vivery/internal/auth"
 )
@@ -14,10 +17,13 @@ func RoutesWithPool(pool *pgxpool.Pool, jwtSecret string, jwtIssuer string, jwtE
 	service := newService(repository, jwtSecret, jwtIssuer, jwtExpMin, refreshExpDays, bcryptCost)
 	handler := newHandler(service)
 
-	// public
-	router.Post("/login", handler.login)
-	router.Post("/logout", handler.logout)
-	router.Post("/refresh", handler.refresh)
+	// public — rate limited
+	router.Group(func(r chi.Router) {
+		r.Use(httprate.LimitByIP(5, time.Minute))
+		r.Post("/login", handler.login)
+		r.Post("/logout", handler.logout)
+		r.Post("/refresh", handler.refresh)
+	})
 
 	// protected
 	router.Group(func(r chi.Router) {

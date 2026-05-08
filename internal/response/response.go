@@ -58,6 +58,7 @@ func (builder *Builder) SetSimpleCookie(name, value string) {
 		Value:    value,
 		Path:     "/",
 		HttpOnly: true,
+		Secure: false,
 		SameSite: http.SameSiteStrictMode,
 	})
 }

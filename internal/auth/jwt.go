@@ -1,8 +1,10 @@
 package auth
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -14,12 +16,21 @@ func GenerateJWT(sub, iss, secret string, expMinutes int) (string, error) {
 		return "", err
 	}
 
+	now := time.Now()
+
+	jti, err := generateJTI()
+	if err != nil {
+		return "", err
+	}
+
 	t := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"iss": iss,
 			"sub": sub,
-			"exp": time.Now().Add(time.Minute * time.Duration(expMinutes)).Unix(),
+			"iat": now.Unix(),
+			"exp": now.Add(time.Minute * time.Duration(expMinutes)).Unix(),
+			"jti": jti,
 		},
 	)
 	s, err := t.SignedString(keyBytes)
@@ -61,4 +72,13 @@ func ValidateJWT(tokenString, secret string) (string, error) {
 	}
 
 	return sub, nil
+}
+
+// creates a cryptographically random unique token
+func generateJTI() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("failed to generate jti: %w", err)
+	}
+	return fmt.Sprintf("%x", b), nil
 }

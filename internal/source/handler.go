@@ -20,7 +20,7 @@ func newHandler(service *service) *handler {
 func (handler *handler) findAll(w http.ResponseWriter, r *http.Request) {
 	accountID, ok := auth.AccountIDFromContext(r.Context())
 	if !ok {
-		response.Send(w, http.StatusUnauthorized, "Unauthorized: missing account", nil)
+		response.Send(w, http.StatusInternalServerError, "Internal server error", nil)
 		return
 	}
 
@@ -30,7 +30,7 @@ func (handler *handler) findAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var sourceDTOs []sourceDTO
+	sourceDTOs := make([]sourceDTO, 0, len(sourceModels))
 	for _, sourceModel := range sourceModels {
 		sourceDTOs = append(sourceDTOs, toSourceDTO(&sourceModel))
 	}
@@ -38,10 +38,15 @@ func (handler *handler) findAll(w http.ResponseWriter, r *http.Request) {
 	response.Send(w, http.StatusOK, "Sources retrieved", sourceDTOs)
 }
 
+func (handler *handler) findWithDetailsByID(w http.ResponseWriter, r *http.Request) {
+	// TODO: implement
+}
+
+
 func (handler *handler) findWithRtmpByID(w http.ResponseWriter, r *http.Request) {
 	accountID, ok := auth.AccountIDFromContext(r.Context())
 	if !ok {
-		response.Send(w, http.StatusUnauthorized, "Unauthorized: missing account", nil)
+		response.Send(w, http.StatusInternalServerError, "Internal server error", nil)
 		return
 	}
 
@@ -64,19 +69,20 @@ func (handler *handler) findWithRtmpByID(w http.ResponseWriter, r *http.Request)
 func (handler *handler) createWithRtmp(w http.ResponseWriter, r *http.Request) {
 	accountID, ok := auth.AccountIDFromContext(r.Context())
 	if !ok {
-		response.Send(w, http.StatusUnauthorized, "Unauthorized: missing account", nil)
+		response.Send(w, http.StatusInternalServerError, "Internal server error", nil)
 		return
 	}
 
+	// TODO: needs own create dto for rtmp
 	var _sourceWithDetailsDTO sourceWithDetailsDTO
 	if err := util.ParseBody(r.Body, &_sourceWithDetailsDTO); err != nil {
-		response.Send(w, http.StatusBadRequest, err.Error(), nil)
+		response.Send(w, http.StatusBadRequest, "Failed to create source", nil)
 		return
 	}
 
 	sourceModel, rtmpModel, err := handler.service.createWithRtmp(r.Context(), _sourceWithDetailsDTO.Source.Name, _sourceWithDetailsDTO.Source.Description, _sourceWithDetailsDTO.Rtmp.URL, _sourceWithDetailsDTO.Rtmp.StreamKey, accountID)
 	if err != nil {
-		response.Send(w, http.StatusBadRequest, err.Error(), nil)
+		response.Send(w, http.StatusBadRequest, "Failed to create source", nil)
 		return
 	}
 
@@ -91,7 +97,7 @@ func (handler *handler) createWithRtmp(w http.ResponseWriter, r *http.Request) {
 func (handler *handler) deleteByID(w http.ResponseWriter, r *http.Request) {
 	accountID, ok := auth.AccountIDFromContext(r.Context())
 	if !ok {
-		response.Send(w, http.StatusUnauthorized, "Unauthorized: missing account", nil)
+		response.Send(w, http.StatusInternalServerError, "Internal server error", nil)
 		return
 	}
 

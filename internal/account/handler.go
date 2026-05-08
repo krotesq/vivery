@@ -19,13 +19,13 @@ func newHandler(service *service) *handler {
 func (handler *handler) create(w http.ResponseWriter, r *http.Request) {
 	var createDTO createDTO
 	if err := util.ParseBody(r.Body, &createDTO); err != nil {
-		response.Send(w, http.StatusBadRequest, err.Error(), nil)
+		response.Send(w, http.StatusBadRequest, "Could not create account", nil)
 		return
 	}
 
 	account, err := handler.service.create(r.Context(), createDTO.Username, createDTO.Password)
 	if err != nil {
-		response.Send(w, http.StatusBadRequest, err.Error(), nil)
+		response.Send(w, http.StatusBadRequest, "Could not create account", nil)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (handler *handler) activateByID(w http.ResponseWriter, r *http.Request) {
 func (handler *handler) login(w http.ResponseWriter, r *http.Request) {
 	var loginDTO loginDTO
 	if err := util.ParseBody(r.Body, &loginDTO); err != nil {
-		response.Send(w, http.StatusBadRequest, err.Error(), nil)
+		response.Send(w, http.StatusBadRequest, "Could not login", nil)
 		return
 	}
 
@@ -91,7 +91,7 @@ func (handler *handler) login(w http.ResponseWriter, r *http.Request) {
 
 	account, accessToken, refreshToken, err := handler.service.login(r.Context(), loginDTO.Username, loginDTO.Password, r.UserAgent(), ip)
 	if err != nil {
-		response.Send(w, http.StatusBadRequest, err.Error(), nil)
+		response.Send(w, http.StatusBadRequest, "Could not login", nil)
 		return
 	}
 
@@ -107,11 +107,11 @@ func (handler *handler) refresh(w http.ResponseWriter, r *http.Request) {
 	// get cookie
 	cookie, err := r.Cookie("refresh_token")
 	if errors.Is(err, http.ErrNoCookie) {
-		response.Send(w, http.StatusUnauthorized, "Missing JWT", nil)
+		response.Send(w, http.StatusUnauthorized, "Could not refresh", nil)
 		return
 	}
 	if err != nil {
-		response.Send(w, http.StatusInternalServerError, err.Error(), nil)
+		response.Send(w, http.StatusInternalServerError, "Could not refresh", nil)
 		return
 	}
 
@@ -119,7 +119,7 @@ func (handler *handler) refresh(w http.ResponseWriter, r *http.Request) {
 	ip := util.GetClientIP(r)
 	refreshToken, jwt, err := handler.service.refresh(r.Context(), cookie.Value, r.UserAgent(), ip)
 	if err != nil {
-		response.Send(w, 500, err.Error(), nil)
+		response.Send(w, 500, "Could not refresh", nil)
 		return
 	}
 
