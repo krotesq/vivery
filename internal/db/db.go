@@ -3,19 +3,19 @@ package db
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func Connect(ctx context.Context, user, password, host, port, name string) (*pgxpool.Pool, error) {
-	dsn := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		user,
-		password,
-		host,
-		port,
-		name,
-	)
+	dsn := (&url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(user, password),
+		Host:     fmt.Sprintf("%s:%s", host, port),
+		Path:     name,
+		RawQuery: "sslmode=disable",
+	}).String()
 
 	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
