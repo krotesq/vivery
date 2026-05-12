@@ -40,6 +40,10 @@ func (s *service) activateByID(ctx context.Context, id string) (*account, error)
 }
 
 func (s *service) create(ctx context.Context, username, password string) (*account, error) {
+	if err := auth.ValidateUsername(username); err != nil {
+		return nil, err
+	}
+	
 	if err := auth.ValidatePassword(password, username); err != nil {
 		return nil, err
 	}

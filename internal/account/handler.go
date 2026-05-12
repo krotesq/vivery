@@ -1,8 +1,9 @@
 package account
 
 import (
-	"net/http"
 	"errors"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/krotesq/vivery/internal/response"
 	"github.com/krotesq/vivery/internal/util"
@@ -29,7 +30,7 @@ func (h *handler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.Send(w, http.StatusOK, "Account created", toAccountDTO(acc))
+	response.Send(w, http.StatusCreated, "Account created", toAccountDTO(acc))
 }
 
 func (h *handler) findByID(w http.ResponseWriter, r *http.Request) {
@@ -96,10 +97,10 @@ func (h *handler) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := response.NewBuilder(w)
-	res.SetStatus(201)
+	res.SetStatus(http.StatusOK)
 	res.SetSimpleCookie("access_token", accessToken)
 	res.SetSimpleCookie("refresh_token", refreshToken)
-	res.SetBody("Account logged in", toAccountDTO(acc))
+	res.SetBody("Account logged in", toAccountMeDTO(acc))
 	res.Send()
 }
 
@@ -119,7 +120,7 @@ func (h *handler) refresh(w http.ResponseWriter, r *http.Request) {
 	ip := util.GetClientIP(r)
 	refreshToken, jwt, err := h.s.refresh(r.Context(), cookie.Value, r.UserAgent(), ip)
 	if err != nil {
-		response.Send(w, 500, "Could not refresh", nil)
+		response.Send(w, http.StatusUnauthorized, "Could not refresh", nil)
 		return
 	}
 
