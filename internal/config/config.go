@@ -6,6 +6,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -18,6 +19,8 @@ type Config struct {
 	DatabasePort     string
 	DatabaseName     string
 	DatabaseSSLMode  string
+
+	AllowedOrigins []string
 
 	JSONWebTokenSecret        []byte
 	JSONWebTokenExpireMinutes int
@@ -54,6 +57,9 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("JWT_SECRET can not be empty")
 	}
 
+	// split allowed origins
+	allowedOrigins := strings.Split(getEnvOrDefault("ALLOWED_ORIGINS", "localhost:3000"), ",")
+
 	cfg := &Config{
 		Host: getEnvOrDefault("HOST", "0.0.0.0"),
 		Port: getEnvOrDefault("PORT", "3000"),
@@ -68,6 +74,8 @@ func Load() (*Config, error) {
 		JSONWebTokenSecret:        secret,
 		JSONWebTokenExpireMinutes: jwtExp,
 		JSONWebTokenIssuer:        getEnvOrDefault("JWT_ISSUER", "vivery"),
+
+		AllowedOrigins: allowedOrigins,
 
 		RefreshTokenExpireDays: refreshExp,
 

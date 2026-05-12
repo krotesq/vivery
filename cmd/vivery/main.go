@@ -47,7 +47,7 @@ func main() {
 
 	// enable middleware
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedOrigins:   cfg.AllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		ExposedHeaders:   []string{"Link"},
@@ -97,6 +97,7 @@ func main() {
 	// we run the server in a seperate go routine, so we can handle signals from the os
 	go func() {
 		log.Printf("Server running at %s:%s", cfg.Host, cfg.Port)
+		log.Printf("Allowed origins: %v", cfg.AllowedOrigins)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("error: %s", err.Error())
 		}
