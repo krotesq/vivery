@@ -150,7 +150,7 @@ func (s *service) refresh(ctx context.Context, token, userAgent, ip string) (str
 	// find token in db
 	refreshToken, err := s.r.findRefreshTokenByHash(ctx, refreshTokenHash)
 	if err != nil {
-		return "", "", err
+		return "", "", defaultErr
 	}
 
 	// check if token is not expired and not revoked
