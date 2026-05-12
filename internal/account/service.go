@@ -8,25 +8,18 @@ import (
 	"time"
 
 	"github.com/krotesq/vivery/internal/auth"
+	"github.com/krotesq/vivery/internal/config"
 )
 
 type service struct {
-	repository     *repository
-	jwtSecret      string
-	jwtIssuer      string
-	jwtExpMin      int
-	refreshExpDays int
-	bcryptCost     int
+	repository *repository
+	cfg        *config.Config
 }
 
-func newService(repository *repository, jwtSecret string, jwtIssuer string, jwtExpMin int, refreshExpDays int, bcryptCost int) *service {
+func newService(repository *repository, cfg *config.Config) *service {
 	return &service{
-		repository:     repository,
-		jwtSecret:      jwtSecret,
-		jwtIssuer:      jwtIssuer,
-		jwtExpMin:      jwtExpMin,
-		refreshExpDays: refreshExpDays,
-		bcryptCost:     bcryptCost,
+		repository: repository,
+		cfg:        cfg,
 	}
 }
 
@@ -51,11 +44,11 @@ func (service *service) create(ctx context.Context, username, password string) (
 		return nil, err
 	}
 
-	passwordHash, err := auth.HashPassword(password, service.bcryptCost)
+	passwordHash, err := auth.HashPassword(password, service.cfg.BcryptCost)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return service.repository.create(ctx, username, passwordHash)
 }
 
@@ -95,7 +88,12 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 	}
 
 	// generate jwt
-	accessToken, err := auth.GenerateJWT(account.ID, service.jwtIssuer, service.jwtSecret, service.jwtExpMin)
+	accessToken, err := auth.GenerateJWT(
+		account.ID,
+		service.cfg.JSONWebTokenIssuer,
+		service.cfg.JSONWebTokenSecret,
+		service.cfg.JSONWebTokenExpireMinutes,
+	)
 	if err != nil {
 		return nil, "", "", defaultErr
 	}
@@ -113,7 +111,14 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 	}
 
 	// save refreshToken to db
-	_, err = service.repository.createRefreshToken(ctx, account.ID, refreshTokenHash, time.Now().AddDate(0, 0, service.refreshExpDays), userAgent, ipAddr)
+	_, err = service.repository.createRefreshToken(
+		ctx,
+		account.ID,
+		refreshTokenHash,
+		time.Now().AddDate(0, 0, service.cfg.RefreshTokenExpireDays),
+		userAgent,
+		ipAddr,
+	)
 	if err != nil {
 		return nil, "", "", defaultErr
 	}
@@ -160,13 +165,25 @@ func (service *service) refresh(ctx context.Context, token, userAgent, ip string
 	}
 
 	// save new token in db
-	_, err = service.repository.createRefreshToken(ctx, refreshToken.AccountID, newRefreshTokenHash, time.Now().AddDate(0, 0, service.refreshExpDays), userAgent, ipAddr)
+	_, err = service.repository.createRefreshToken(
+		ctx,
+		refreshToken.AccountID,
+		newRefreshTokenHash,
+		time.Now().AddDate(0, 0, service.cfg.RefreshTokenExpireDays),
+		userAgent,
+		ipAddr,
+	)
 	if err != nil {
 		return "", "", defaultErr
 	}
 
 	// generate new jwt
-	jwt, err := auth.GenerateJWT(refreshToken.AccountID, service.jwtIssuer, service.jwtSecret, service.jwtExpMin)
+	jwt, err := auth.GenerateJWT(
+		refreshToken.AccountID,
+		service.cfg.JSONWebTokenIssuer,
+		service.cfg.JSONWebTokenSecret,
+		service.cfg.JSONWebTokenExpireMinutes,
+	)
 	if err != nil {
 		return "", "", defaultErr
 	}

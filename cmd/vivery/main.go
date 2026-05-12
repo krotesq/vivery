@@ -63,7 +63,7 @@ func main() {
 	// the account router has public and protected routes so we
 	// mount the account router seperate and configure auth inside
 	// we could move the /login, /register, /logout & /reset to the auth package sometime
-	routerApi.Mount("/account", account.RoutesWithPool(pool, cfg.JSONWebTokenSecret, cfg.JSONWebTokenIssuer, cfg.JSONWebTokenExpireMinutes, cfg.RefreshTokenExpireDays, cfg.BcryptCost))
+	routerApi.Mount("/account", account.RoutesWithPool(pool, cfg))
 
 	// protected routes
 	routerApi.Group(func(r chi.Router) {
@@ -94,6 +94,7 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
+	// we run the server in a seperate go routine, so we can handle signals from the os
 	go func() {
 		log.Printf("Server running at %s:%s", cfg.Host, cfg.Port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -101,7 +102,6 @@ func main() {
 		}
 	}()
 
-	// wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit

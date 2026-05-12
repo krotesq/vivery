@@ -7,14 +7,15 @@ import (
 	"github.com/go-chi/httprate"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/krotesq/vivery/internal/auth"
+	"github.com/krotesq/vivery/internal/config"
 )
 
-func RoutesWithPool(pool *pgxpool.Pool, jwtSecret string, jwtIssuer string, jwtExpMin int, refreshExpDays int, bcryptCost int) chi.Router {
+func RoutesWithPool(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 	router := chi.NewRouter()
 
 	repository := newRepository(pool)
-	service := newService(repository, jwtSecret, jwtIssuer, jwtExpMin, refreshExpDays, bcryptCost)
+	service := newService(repository, cfg)
 	handler := newHandler(service)
 
 	// public — rate limited
@@ -27,7 +28,7 @@ func RoutesWithPool(pool *pgxpool.Pool, jwtSecret string, jwtIssuer string, jwtE
 
 	// protected
 	router.Group(func(r chi.Router) {
-		r.Use(auth.Auth(jwtSecret))
+		r.Use(auth.Auth(cfg.JSONWebTokenSecret))
 		r.Post("/", handler.create)
 		r.Get("/{id}", handler.findByID)
 		r.Patch("/{id}/deactivate", handler.deactivateByID)
