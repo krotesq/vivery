@@ -15,7 +15,7 @@ func Connect(ctx context.Context, cfg *config.Config) (*pgxpool.Pool, error) {
 		User:     url.UserPassword(cfg.DatabaseUser, cfg.DatabasePassword),
 		Host:     fmt.Sprintf("%s:%s", cfg.DatabaseHost, cfg.DatabasePort),
 		Path:     cfg.DatabaseName,
-		RawQuery: "sslmode=disable",
+		RawQuery: fmt.Sprintf("sslmode=%s", cfg.DatabaseSSLMode),
 	}).String()
 
 	pool, err := pgxpool.New(ctx, dsn)

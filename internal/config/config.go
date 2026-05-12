@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 )
 
@@ -15,6 +16,7 @@ type Config struct {
 	DatabaseHost     string
 	DatabasePort     string
 	DatabaseName     string
+	DatabaseSSLMode  string
 
 	JSONWebTokenSecret        string
 	JSONWebTokenExpireMinutes int
@@ -50,6 +52,7 @@ func Load() (*Config, error) {
 		DatabaseHost:     getEnvOrDefault("DATABASE_HOST", "localhost"),
 		DatabasePort:     getEnvOrDefault("DATABASE_PORT", "5432"),
 		DatabaseName:     getEnvOrDefault("DATABASE_NAME", "vivery"),
+		DatabaseSSLMode:  getEnvOrDefault("DATABASE_SSLMODE", "prefer"),
 
 		JSONWebTokenSecret:        getEnvOrDefault("JWT_SECRET", ""),
 		JSONWebTokenExpireMinutes: jwtExp,
@@ -68,6 +71,11 @@ func Load() (*Config, error) {
 	}
 	if cfg.JSONWebTokenSecret == "" {
 		return nil, fmt.Errorf("JWT_SECRET is required")
+	}
+
+	sslModes := []string{"disable", "allow", "prefer", "require", "verify-ca", "verify-full"}
+	if !slices.Contains(sslModes, cfg.DatabaseSSLMode) {
+		return nil, fmt.Errorf("DATABASE_SSLMODE can only be %v", sslModes)
 	}
 
 	return cfg, nil
