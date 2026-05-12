@@ -27,6 +27,7 @@ import (
 func main() {
 
 	// load config
+	// this config struct should be passed down to all functions that need it
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalln(err)
@@ -34,7 +35,7 @@ func main() {
 
 	// connect to database
 	ctx := context.Background()
-	pool, err := db.Connect(ctx, cfg.DatabaseUser, cfg.DatabasePassword, cfg.DatabaseHost, cfg.DatabasePort, cfg.DatabaseName)
+	pool, err := db.Connect(ctx, cfg)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %s", err.Error())
 	}
