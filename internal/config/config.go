@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"slices"
@@ -18,7 +19,7 @@ type Config struct {
 	DatabaseName     string
 	DatabaseSSLMode  string
 
-	JSONWebTokenSecret        string
+	JSONWebTokenSecret        []byte
 	JSONWebTokenExpireMinutes int
 	JSONWebTokenIssuer        string
 
@@ -43,6 +44,16 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("invalid BCRYPT_COST: %w", err)
 	}
 
+	// decode jwt secret
+	secret, err := base64.StdEncoding.DecodeString(getEnvOrDefault("JWT_SECRET", ""))
+	if err != nil {
+		return nil, fmt.Errorf("could not decode jwt secret: %w", err)
+	}
+
+	if len(secret) == 0 {
+		return nil, fmt.Errorf("JWT_SECRET can not be empty")
+	}
+
 	cfg := &Config{
 		Host: getEnvOrDefault("HOST", "0.0.0.0"),
 		Port: getEnvOrDefault("PORT", "3000"),
@@ -54,7 +65,7 @@ func Load() (*Config, error) {
 		DatabaseName:     getEnvOrDefault("DATABASE_NAME", "vivery"),
 		DatabaseSSLMode:  getEnvOrDefault("DATABASE_SSLMODE", "prefer"),
 
-		JSONWebTokenSecret:        getEnvOrDefault("JWT_SECRET", ""),
+		JSONWebTokenSecret:        secret,
 		JSONWebTokenExpireMinutes: jwtExp,
 		JSONWebTokenIssuer:        getEnvOrDefault("JWT_ISSUER", "vivery"),
 
@@ -66,11 +77,9 @@ func Load() (*Config, error) {
 	if cfg.DatabaseUser == "" {
 		return nil, fmt.Errorf("DATABASE_USER is required")
 	}
+
 	if cfg.DatabasePassword == "" {
 		return nil, fmt.Errorf("DATABASE_PASSWORD is required")
-	}
-	if cfg.JSONWebTokenSecret == "" {
-		return nil, fmt.Errorf("JWT_SECRET is required")
 	}
 
 	sslModes := []string{"disable", "allow", "prefer", "require", "verify-ca", "verify-full"}
