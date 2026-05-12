@@ -60,6 +60,7 @@ func (s *service) login(ctx context.Context, username, password, userAgent, ip s
 	if err != nil {
 		return nil, "", "", defaultErr
 	}
+	accID := acc.ID
 
 	if !acc.Active {
 		return nil, "", "", defaultErr
@@ -75,14 +76,19 @@ func (s *service) login(ctx context.Context, username, password, userAgent, ip s
 		// increment failed login attempts and override account
 		acc, err = s.r.incrementFailedLoginAttemptsByID(ctx, acc.ID)
 		if err != nil {
-			log.Printf("Failed to increment login attempts for account %s: %v", acc.ID, err)
+			log.Printf("Failed to increment login attempts for account %s: %v", accID, err)
+			return nil, "", "", defaultErr
 		}
 
 		// check if failed_login_attempts is now > 2, if yes lock account
 		if acc.FailedLoginAttempts > 2 {
 			lockedMinutes := 5 * acc.FailedLoginAttempts
+			acc, err = s.r.updateLockedUntil(ctx, acc.ID, time.Now().Add(time.Minute*time.Duration(lockedMinutes)))
+			if err != nil {
+				log.Printf("Failed to update locked_until for account %s: %v", accID, err)
+				return nil, "", "", defaultErr
+			}
 			log.Printf("Account %s locked for %d minutes", acc.Username, lockedMinutes)
-			s.r.updateLockedUntil(ctx, acc.ID, time.Now().Add(time.Minute*time.Duration(lockedMinutes)))
 		}
 
 		return nil, "", "", defaultErr
