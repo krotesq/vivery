@@ -12,51 +12,51 @@ import (
 )
 
 type service struct {
-	repository *repository
-	cfg        *config.Config
+	r *repository
+	c *config.Config
 }
 
-func newService(repository *repository, cfg *config.Config) *service {
+func newService(r *repository, c *config.Config) *service {
 	return &service{
-		repository: repository,
-		cfg:        cfg,
+		r: r,
+		c: c,
 	}
 }
 
-func (service *service) findByID(ctx context.Context, id string) (*account, error) {
-	return service.repository.findByID(ctx, id)
+func (s *service) findByID(ctx context.Context, id string) (*account, error) {
+	return s.r.findByID(ctx, id)
 }
 
-func (service *service) deleteByID(ctx context.Context, id string) (*account, error) {
-	return service.repository.deleteByID(ctx, id)
+func (s *service) deleteByID(ctx context.Context, id string) (*account, error) {
+	return s.r.deleteByID(ctx, id)
 }
 
-func (service *service) deactivateByID(ctx context.Context, id string) (*account, error) {
-	return service.repository.deactivateByID(ctx, id)
+func (s *service) deactivateByID(ctx context.Context, id string) (*account, error) {
+	return s.r.deactivateByID(ctx, id)
 }
 
-func (service *service) activateByID(ctx context.Context, id string) (*account, error) {
-	return service.repository.activateByID(ctx, id)
+func (s *service) activateByID(ctx context.Context, id string) (*account, error) {
+	return s.r.activateByID(ctx, id)
 }
 
-func (service *service) create(ctx context.Context, username, password string) (*account, error) {
+func (s *service) create(ctx context.Context, username, password string) (*account, error) {
 	if err := auth.ValidatePassword(password, username); err != nil {
 		return nil, err
 	}
 
-	passwordHash, err := auth.HashPassword(password, service.cfg.BcryptCost)
+	passwordHash, err := auth.HashPassword(password, s.c.BcryptCost)
 	if err != nil {
 		return nil, err
 	}
 
-	return service.repository.create(ctx, username, passwordHash)
+	return s.r.create(ctx, username, passwordHash)
 }
 
-func (service *service) login(ctx context.Context, username, password, userAgent, ip string) (*account, string, string, error) {
+func (s *service) login(ctx context.Context, username, password, userAgent, ip string) (*account, string, string, error) {
 	defaultErr := errors.New("could not login")
 
 	// load account
-	acc, err := service.repository.findByUsername(ctx, username)
+	acc, err := s.r.findByUsername(ctx, username)
 	if err != nil {
 		return nil, "", "", defaultErr
 	}
@@ -73,7 +73,7 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 	if err := auth.ComparePassword(password, acc.PasswordHash); err != nil {
 
 		// increment failed login attempts and override account
-		acc, err = service.repository.incrementFailedLoginAttemptsByID(ctx, acc.ID)
+		acc, err = s.r.incrementFailedLoginAttemptsByID(ctx, acc.ID)
 		if err != nil {
 			log.Printf("Failed to increment login attempts for account %s: %v", acc.ID, err)
 		}
@@ -82,7 +82,7 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 		if acc.FailedLoginAttempts > 2 {
 			lockedMinutes := 5 * acc.FailedLoginAttempts
 			log.Printf("Account %s locked for %d minutes", acc.Username, lockedMinutes)
-			service.repository.updateLockedUntil(ctx, acc.ID, time.Now().Add(time.Minute*time.Duration(lockedMinutes)))
+			s.r.updateLockedUntil(ctx, acc.ID, time.Now().Add(time.Minute*time.Duration(lockedMinutes)))
 		}
 
 		return nil, "", "", defaultErr
@@ -90,7 +90,7 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 
 	// reset failed login attempts if > 0
 	if acc.FailedLoginAttempts > 0 {
-		if _, err := service.repository.resetFailedLoginAttemptsByID(ctx, acc.ID); err != nil {
+		if _, err := s.r.resetFailedLoginAttemptsByID(ctx, acc.ID); err != nil {
 			log.Printf("failed to reset login attempts for account %s: %v", acc.ID, err)
 			return nil, "", "", defaultErr
 		}
@@ -99,9 +99,9 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 	// generate jwt
 	at, err := auth.GenerateJWT(
 		acc.ID,
-		service.cfg.JSONWebTokenIssuer,
-		service.cfg.JSONWebTokenSecret,
-		service.cfg.JSONWebTokenExpireMinutes,
+		s.c.JSONWebTokenIssuer,
+		s.c.JSONWebTokenSecret,
+		s.c.JSONWebTokenExpireMinutes,
 	)
 	if err != nil {
 		return nil, "", "", defaultErr
@@ -120,11 +120,11 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 	}
 
 	// save refreshToken to db
-	_, err = service.repository.createRefreshToken(
+	_, err = s.r.createRefreshToken(
 		ctx,
 		acc.ID,
 		rth,
-		time.Now().AddDate(0, 0, service.cfg.RefreshTokenExpireDays),
+		time.Now().AddDate(0, 0, s.c.RefreshTokenExpireDays),
 		userAgent,
 		ipAddr,
 	)
@@ -135,14 +135,14 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 	return acc, at, rt, nil
 }
 
-func (service *service) refresh(ctx context.Context, token, userAgent, ip string) (string, string, error) {
+func (s *service) refresh(ctx context.Context, token, userAgent, ip string) (string, string, error) {
 	defaultErr := errors.New("could not refresh")
 
 	// hash sent token to find in db
 	refreshTokenHash := auth.HashRefreshToken(token)
 
 	// find token in db
-	refreshToken, err := service.repository.findRefreshTokenByHash(ctx, refreshTokenHash)
+	refreshToken, err := s.r.findRefreshTokenByHash(ctx, refreshTokenHash)
 	if err != nil {
 		return "", "", err
 	}
@@ -157,7 +157,7 @@ func (service *service) refresh(ctx context.Context, token, userAgent, ip string
 	}
 
 	// revoke old refresh token
-	if _, err := service.repository.revokeRefreshTokenByID(ctx, refreshToken.ID); err != nil {
+	if _, err := s.r.revokeRefreshTokenByID(ctx, refreshToken.ID); err != nil {
 		return "", "", defaultErr
 	}
 
@@ -174,11 +174,11 @@ func (service *service) refresh(ctx context.Context, token, userAgent, ip string
 	}
 
 	// save new token in db
-	_, err = service.repository.createRefreshToken(
+	_, err = s.r.createRefreshToken(
 		ctx,
 		refreshToken.AccountID,
 		newRefreshTokenHash,
-		time.Now().AddDate(0, 0, service.cfg.RefreshTokenExpireDays),
+		time.Now().AddDate(0, 0, s.c.RefreshTokenExpireDays),
 		userAgent,
 		ipAddr,
 	)
@@ -189,9 +189,9 @@ func (service *service) refresh(ctx context.Context, token, userAgent, ip string
 	// generate new jwt
 	jwt, err := auth.GenerateJWT(
 		refreshToken.AccountID,
-		service.cfg.JSONWebTokenIssuer,
-		service.cfg.JSONWebTokenSecret,
-		service.cfg.JSONWebTokenExpireMinutes,
+		s.c.JSONWebTokenIssuer,
+		s.c.JSONWebTokenSecret,
+		s.c.JSONWebTokenExpireMinutes,
 	)
 	if err != nil {
 		return "", "", defaultErr
@@ -200,15 +200,15 @@ func (service *service) refresh(ctx context.Context, token, userAgent, ip string
 	return newRefreshToken, jwt, nil
 }
 
-func (service *service) me(ctx context.Context) (*account, error) {
+func (s *service) me(ctx context.Context) (*account, error) {
 	id, ok := auth.AccountIDFromContext(ctx)
 	if !ok {
 		return nil, errors.New("unable to load account data")
 	}
-	return service.repository.findByID(ctx, id)
+	return s.r.findByID(ctx, id)
 }
 
-func (service *service) revokeRefreshToken(ctx context.Context, token string) {
+func (s *service) revokeRefreshToken(ctx context.Context, token string) {
 	tokenHash := auth.HashRefreshToken(token)
-	service.repository.revokeRefreshTokenByHash(ctx, tokenHash)
+	s.r.revokeRefreshTokenByHash(ctx, tokenHash)
 }
