@@ -46,6 +46,15 @@ func (repository *repository) resetFailedLoginAttemptsByID(ctx context.Context, 
 	return &acc, nil
 }
 
+func (repository *repository) updateLockedUntil(ctx context.Context, id string, lockedUntil time.Time) (*account, error) {
+	var acc account
+	const q = `UPDATE account SET locked_until = $1 WHERE id = $2 RETURNING *`
+	if err := pgxscan.Get(ctx, repository.pool, &acc, q, lockedUntil, id); err != nil {
+		return nil, err
+	}
+	return &acc, nil
+}
+
 func (repository *repository) findByUsername(ctx context.Context, username string) (*account, error) {
 	var acc account
 	const q = `SELECT * FROM account WHERE username = $1`

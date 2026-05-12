@@ -5,6 +5,7 @@ CREATE TABLE account (
   password_hash TEXT NOT NULL,
   active BOOLEAN NOT NULL DEFAULT TRUE,
   failed_login_attempts INT DEFAULT 0,
+  locked_until TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 ---- create above / drop below ----

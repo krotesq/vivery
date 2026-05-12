@@ -56,40 +56,49 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 	defaultErr := errors.New("could not login")
 
 	// load account
-	account, err := service.repository.findByUsername(ctx, username)
+	acc, err := service.repository.findByUsername(ctx, username)
 	if err != nil {
 		return nil, "", "", defaultErr
 	}
 
-	if !account.Active {
+	if !acc.Active {
 		return nil, "", "", defaultErr
 	}
 
-	// check if account has >= 3 failed logins
-	if account.FailedLoginAttempts >= 3 {
+	if !acc.LockedUntil.Before(time.Now()) {
 		return nil, "", "", defaultErr
 	}
 
 	// verify password
-	if err := auth.ComparePassword(password, account.PasswordHash); err != nil {
-		// increment failed login attempts
-		if _, err := service.repository.incrementFailedLoginAttemptsByID(ctx, account.ID); err != nil {
-			log.Printf("failed to increment login attempts for account %s: %v", account.ID, err)
+	if err := auth.ComparePassword(password, acc.PasswordHash); err != nil {
+
+		// increment failed login attempts and override account
+		acc, err = service.repository.incrementFailedLoginAttemptsByID(ctx, acc.ID)
+		if err != nil {
+			log.Printf("Failed to increment login attempts for account %s: %v", acc.ID, err)
 		}
+
+		// check if failed_login_attempts is now > 2, if yes lock account
+		if acc.FailedLoginAttempts > 2 {
+			lockedMinutes := 5 * acc.FailedLoginAttempts
+			log.Printf("Account %s locked for %d minutes", acc.Username, lockedMinutes)
+			service.repository.updateLockedUntil(ctx, acc.ID, time.Now().Add(time.Minute*time.Duration(lockedMinutes)))
+		}
+
 		return nil, "", "", defaultErr
 	}
 
 	// reset failed login attempts if > 0
-	if account.FailedLoginAttempts > 0 {
-		if _, err := service.repository.resetFailedLoginAttemptsByID(ctx, account.ID); err != nil {
-			log.Printf("failed to reset login attempts for account %s: %v", account.ID, err)
+	if acc.FailedLoginAttempts > 0 {
+		if _, err := service.repository.resetFailedLoginAttemptsByID(ctx, acc.ID); err != nil {
+			log.Printf("failed to reset login attempts for account %s: %v", acc.ID, err)
 			return nil, "", "", defaultErr
 		}
 	}
 
 	// generate jwt
-	accessToken, err := auth.GenerateJWT(
-		account.ID,
+	at, err := auth.GenerateJWT(
+		acc.ID,
 		service.cfg.JSONWebTokenIssuer,
 		service.cfg.JSONWebTokenSecret,
 		service.cfg.JSONWebTokenExpireMinutes,
@@ -99,7 +108,7 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 	}
 
 	// generate refresh token
-	refreshToken, refreshTokenHash, err := auth.GenerateRefreshToken()
+	rt, rth, err := auth.GenerateRefreshToken()
 	if err != nil {
 		return nil, "", "", defaultErr
 	}
@@ -113,8 +122,8 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 	// save refreshToken to db
 	_, err = service.repository.createRefreshToken(
 		ctx,
-		account.ID,
-		refreshTokenHash,
+		acc.ID,
+		rth,
 		time.Now().AddDate(0, 0, service.cfg.RefreshTokenExpireDays),
 		userAgent,
 		ipAddr,
@@ -123,7 +132,7 @@ func (service *service) login(ctx context.Context, username, password, userAgent
 		return nil, "", "", defaultErr
 	}
 
-	return account, accessToken, refreshToken, nil
+	return acc, at, rt, nil
 }
 
 func (service *service) refresh(ctx context.Context, token, userAgent, ip string) (string, string, error) {
