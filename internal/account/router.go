@@ -29,12 +29,12 @@ func RoutesWithPool(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// protected
 	router.Group(func(r chi.Router) {
 		r.Use(auth.Auth(cfg.JSONWebTokenSecret))
+		r.Get("/me", handler.me)
 		r.Post("/", handler.create)
 		r.Get("/{id}", handler.findByID)
 		r.Patch("/{id}/deactivate", handler.deactivateByID)
 		r.Patch("/{id}/activate", handler.activateByID)
 		r.Delete("/{id}", handler.deleteByID)
-		r.Get("/me", handler.me)
 	})
 
 	return router
