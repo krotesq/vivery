@@ -153,5 +153,5 @@ func (h *handler) me(w http.ResponseWriter, r *http.Request) {
 		response.Send(w, http.StatusInternalServerError, "Unable to load account.", nil)
 		return
 	}
-	response.Send(w, http.StatusOK, "Account found.", toAccountDTO(acc))
+	response.Send(w, http.StatusOK, "Account found.", toAccountMeDTO(acc))
 }

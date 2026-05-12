@@ -11,3 +11,11 @@ func toAccountDTO(acc *account) accountDTO {
 		CreatedAt:           acc.CreatedAt,
 	}
 }
+
+func toAccountMeDTO(acc *account) accountMeDTO {
+	return accountMeDTO{
+		ID:        acc.ID,
+		Username:  acc.Username,
+		CreatedAt: acc.CreatedAt,
+	}
+}

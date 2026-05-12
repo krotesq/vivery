@@ -11,6 +11,12 @@ type accountDTO struct {
 	CreatedAt           time.Time  `json:"createdAt"`
 }
 
+type accountMeDTO struct {
+	ID                  string     `json:"id"`
+	Username            string     `json:"username"`
+	CreatedAt           time.Time  `json:"createdAt"`
+}
+
 type loginDTO struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
