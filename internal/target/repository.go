@@ -28,19 +28,19 @@ func (repository *repository) findAll(ctx context.Context, accountID string) ([]
 }
 
 func (repository *repository) findWithRtmpByID(ctx context.Context, id string, accountID string) (*target, *rtmp, error) {
-	var _target target
+	var t target
 	const targetQuery = `SELECT id, name, description, target_type_id, account_id, created_at FROM target WHERE id = $1 AND account_id = $2`
-	if err := pgxscan.Get(ctx, repository.pool, &_target, targetQuery, id, accountID); err != nil {
+	if err := pgxscan.Get(ctx, repository.pool, &t, targetQuery, id, accountID); err != nil {
 		return &target{}, &rtmp{}, err
 	}
 
-	var _rtmp rtmp
+	var r rtmp
 	const rtmpQuery = `SELECT target_id, url, stream_key, created_at FROM target_rtmp WHERE target_id = $1`
-	if err := pgxscan.Get(ctx, repository.pool, &_rtmp, rtmpQuery, _target.ID); err != nil {
+	if err := pgxscan.Get(ctx, repository.pool, &r, rtmpQuery, t.ID); err != nil {
 		return &target{}, &rtmp{}, err
 	}
 
-	return &_target, &_rtmp, nil
+	return &t, &r, nil
 }
 
 func (repository *repository) createWithRtmp(ctx context.Context, name string, description string, url string, stream_key string, accountID string) (*target, *rtmp, error) {
@@ -66,8 +66,8 @@ func (repository *repository) createWithRtmp(ctx context.Context, name string, d
 			)
 			RETURNING id, name, description, target_type_id, account_id, created_at
 		`
-	var _target target
-	if err := pgxscan.Get(ctx, tx, &_target, targetQuery, name, description, targetType.ID, accountID); err != nil {
+	var t target
+	if err := pgxscan.Get(ctx, tx, &t, targetQuery, name, description, targetType.ID, accountID); err != nil {
 		return &target{}, &rtmp{}, err
 	}
 
@@ -76,8 +76,8 @@ func (repository *repository) createWithRtmp(ctx context.Context, name string, d
 			VALUES ($1, $2, $3)
 			RETURNING target_id, url, stream_key, created_at
 		`
-	var _rtmp rtmp
-	if err := pgxscan.Get(ctx, tx, &_rtmp, rtmpQuery, _target.ID, url, stream_key); err != nil {
+	var r rtmp
+	if err := pgxscan.Get(ctx, tx, &r, rtmpQuery, t.ID, url, stream_key); err != nil {
 		return &target{}, &rtmp{}, err
 	}
 
@@ -85,7 +85,7 @@ func (repository *repository) createWithRtmp(ctx context.Context, name string, d
 		return &target{}, &rtmp{}, err
 	}
 
-	return &_target, &_rtmp, err
+	return &t, &r, err
 }
 
 func (repository *repository) deleteByID(ctx context.Context, id string, accountID string) error {
@@ -94,6 +94,11 @@ func (repository *repository) deleteByID(ctx context.Context, id string, account
 		WHERE id = $1 AND account_id = $2
 	`
 	cmdTag, err := repository.pool.Exec(ctx, query, id, accountID)
+
+	// always check error first before accesing cmdTag
+	if err != nil {
+		return err
+	}
 
 	if cmdTag.RowsAffected() == 0 {
 		return sql.ErrNoRows

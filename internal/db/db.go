@@ -3,19 +3,20 @@ package db
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/krotesq/vivery/internal/config"
 )
 
-func Connect(ctx context.Context, user, password, host, port, name string) (*pgxpool.Pool, error) {
-	dsn := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		user,
-		password,
-		host,
-		port,
-		name,
-	)
+func Connect(ctx context.Context, cfg *config.Config) (*pgxpool.Pool, error) {
+	dsn := (&url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(cfg.DatabaseUser, cfg.DatabasePassword),
+		Host:     fmt.Sprintf("%s:%s", cfg.DatabaseHost, cfg.DatabasePort),
+		Path:     cfg.DatabaseName,
+		RawQuery: fmt.Sprintf("sslmode=%s", cfg.DatabaseSSLMode),
+	}).String()
 
 	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {

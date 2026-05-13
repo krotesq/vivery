@@ -1,15 +1,20 @@
 package auth
 
 import (
-	"encoding/base64"
+	"crypto/rand"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateJWT(sub, iss, secret string, expMinutes int) (string, error) {
-	keyBytes, err := base64.StdEncoding.DecodeString(secret)
+// Generates and signes a new JWT with given secret and exp (minutes)
+func GenerateJWT(sub, iss string, secret []byte, exp int) (string, error) {
+
+	now := time.Now()
+
+	jti, err := generateJTI()
 	if err != nil {
 		return "", err
 	}
@@ -19,26 +24,24 @@ func GenerateJWT(sub, iss, secret string, expMinutes int) (string, error) {
 		jwt.MapClaims{
 			"iss": iss,
 			"sub": sub,
-			"exp": time.Now().Add(time.Minute * time.Duration(expMinutes)).Unix(),
+			"iat": now.Unix(),
+			"exp": now.Add(time.Minute * time.Duration(exp)).Unix(),
+			"jti": jti,
 		},
 	)
-	s, err := t.SignedString(keyBytes)
-	return s, err
+	st, err := t.SignedString(secret)
+	return st, err
 }
 
-func ValidateJWT(tokenString, secret string) (string, error) {
-	keyBytes, err := base64.StdEncoding.DecodeString(secret)
-	if err != nil {
-		return "", err
-	}
+func ValidateJWT(token string, secret []byte) (string, error) {
 
-	token, err := jwt.Parse(
-		tokenString,
+	t, err := jwt.Parse(
+		token,
 		func(token *jwt.Token) (any, error) {
 			if token.Method != jwt.SigningMethodHS256 {
 				return nil, errors.New("unexpected signing method")
 			}
-			return keyBytes, nil
+			return secret, nil
 		},
 	)
 
@@ -46,11 +49,11 @@ func ValidateJWT(tokenString, secret string) (string, error) {
 		return "", err
 	}
 
-	if !token.Valid {
+	if !t.Valid {
 		return "", errors.New("invalid token")
 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
+	claims, ok := t.Claims.(jwt.MapClaims)
 	if !ok {
 		return "", errors.New("invalid claims")
 	}
@@ -61,4 +64,13 @@ func ValidateJWT(tokenString, secret string) (string, error) {
 	}
 
 	return sub, nil
+}
+
+// creates a cryptographically random unique token
+func generateJTI() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("failed to generate jti: %w", err)
+	}
+	return fmt.Sprintf("%x", b), nil
 }

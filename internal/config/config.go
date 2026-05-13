@@ -1,9 +1,12 @@
 package config
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -15,8 +18,11 @@ type Config struct {
 	DatabaseHost     string
 	DatabasePort     string
 	DatabaseName     string
+	DatabaseSSLMode  string
 
-	JSONWebTokenSecret        string
+	AllowedOrigins []string
+
+	JSONWebTokenSecret        []byte
 	JSONWebTokenExpireMinutes int
 	JSONWebTokenIssuer        string
 
@@ -41,6 +47,19 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("invalid BCRYPT_COST: %w", err)
 	}
 
+	// decode jwt secret
+	secret, err := base64.StdEncoding.DecodeString(getEnvOrDefault("JWT_SECRET", ""))
+	if err != nil {
+		return nil, fmt.Errorf("could not decode jwt secret: %w", err)
+	}
+
+	if len(secret) == 0 {
+		return nil, fmt.Errorf("JWT_SECRET can not be empty")
+	}
+
+	// split allowed origins
+	allowedOrigins := strings.Split(getEnvOrDefault("ALLOWED_ORIGINS", "localhost:3000"), ",")
+
 	cfg := &Config{
 		Host: getEnvOrDefault("HOST", "0.0.0.0"),
 		Port: getEnvOrDefault("PORT", "3000"),
@@ -50,10 +69,13 @@ func Load() (*Config, error) {
 		DatabaseHost:     getEnvOrDefault("DATABASE_HOST", "localhost"),
 		DatabasePort:     getEnvOrDefault("DATABASE_PORT", "5432"),
 		DatabaseName:     getEnvOrDefault("DATABASE_NAME", "vivery"),
+		DatabaseSSLMode:  getEnvOrDefault("DATABASE_SSLMODE", "prefer"),
 
-		JSONWebTokenSecret:        getEnvOrDefault("JWT_SECRET", ""),
+		JSONWebTokenSecret:        secret,
 		JSONWebTokenExpireMinutes: jwtExp,
 		JSONWebTokenIssuer:        getEnvOrDefault("JWT_ISSUER", "vivery"),
+
+		AllowedOrigins: allowedOrigins,
 
 		RefreshTokenExpireDays: refreshExp,
 
@@ -63,11 +85,14 @@ func Load() (*Config, error) {
 	if cfg.DatabaseUser == "" {
 		return nil, fmt.Errorf("DATABASE_USER is required")
 	}
+
 	if cfg.DatabasePassword == "" {
 		return nil, fmt.Errorf("DATABASE_PASSWORD is required")
 	}
-	if cfg.JSONWebTokenSecret == "" {
-		return nil, fmt.Errorf("JWT_SECRET is required")
+
+	sslModes := []string{"disable", "allow", "prefer", "require", "verify-ca", "verify-full"}
+	if !slices.Contains(sslModes, cfg.DatabaseSSLMode) {
+		return nil, fmt.Errorf("DATABASE_SSLMODE can only be %v", sslModes)
 	}
 
 	return cfg, nil

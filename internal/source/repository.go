@@ -86,7 +86,7 @@ func (repository *repository) createWithRtmp(ctx context.Context, name string, d
 		return &source{}, &rtmp{}, err
 	}
 
-	return &_source, &_rtmp, err
+	return &_source, &_rtmp, nil
 }
 
 func (repository *repository) deleteByID(ctx context.Context, id string, accountID string) error {
@@ -95,10 +95,13 @@ func (repository *repository) deleteByID(ctx context.Context, id string, account
 		WHERE id = $1 AND account_id = $2
 	`
 	cmdTag, err := repository.pool.Exec(ctx, query, id, accountID)
+	if err != nil {
+		return err
+	}
 
 	if cmdTag.RowsAffected() == 0 {
 		return sql.ErrNoRows
 	}
 
-	return err
+	return nil
 }

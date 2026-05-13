@@ -3,11 +3,18 @@ package account
 import "time"
 
 type accountDTO struct {
-	ID                  string    `json:"id"`
-	Username            string    `json:"username"`
-	Active              bool      `json:"active"`
-	FailedLoginAttempts int       `json:"failedLoginAttempts"`
-	CreatedAt           time.Time `json:"createdAt"`
+	ID                  string     `json:"id"`
+	Username            string     `json:"username"`
+	Active              bool       `json:"active"`
+	FailedLoginAttempts int        `json:"failedLoginAttempts"`
+	LockedUntil         time.Time  `json:"lockedUntil"`
+	CreatedAt           time.Time  `json:"createdAt"`
+}
+
+type accountMeDTO struct {
+	ID                  string     `json:"id"`
+	Username            string     `json:"username"`
+	CreatedAt           time.Time  `json:"createdAt"`
 }
 
 type loginDTO struct {

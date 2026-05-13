@@ -6,12 +6,13 @@ import (
 )
 
 type account struct {
-	ID                  string    `db:"id"`
-	Username            string    `db:"username"`
-	PasswordHash        string    `db:"password_hash"`
-	Active              bool      `db:"active"`
-	FailedLoginAttempts int       `db:"failed_login_attempts"`
-	CreatedAt           time.Time `db:"created_at"`
+	ID                  string     `db:"id"`
+	Username            string     `db:"username"`
+	PasswordHash        string     `db:"password_hash"`
+	Active              bool       `db:"active"`
+	FailedLoginAttempts int        `db:"failed_login_attempts"`
+	LockedUntil         time.Time  `db:"locked_until"`
+	CreatedAt           time.Time  `db:"created_at"`
 }
 
 type refreshToken struct {

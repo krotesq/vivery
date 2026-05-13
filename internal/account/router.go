@@ -1,33 +1,45 @@
 package account
 
 import (
+	"time"
+
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/httprate"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/krotesq/vivery/internal/auth"
+	"github.com/krotesq/vivery/internal/config"
 )
 
-func RoutesWithPool(pool *pgxpool.Pool, jwtSecret string, jwtIssuer string, jwtExpMin int, refreshExpDays int, bcryptCost int) chi.Router {
+func RoutesWithPool(p *pgxpool.Pool, c *config.Config) chi.Router {
 
 	router := chi.NewRouter()
 
-	repository := newRepository(pool)
-	service := newService(repository, jwtSecret, jwtIssuer, jwtExpMin, refreshExpDays, bcryptCost)
-	handler := newHandler(service)
+	r := newRepository(p)
+	s := newService(r, c)
+	h := newHandler(s)
 
 	// public
-	router.Post("/login", handler.login)
-	router.Post("/logout", handler.logout)
-	router.Post("/refresh", handler.refresh)
+	router.Group(func(r chi.Router) {
+		r.Use(httprate.LimitByIP(50, time.Minute))
+		r.Post("/logout", h.logout)
+	})
+
+	// public
+	router.Group(func(r chi.Router) {
+		r.Use(httprate.LimitByIP(5, time.Minute))
+		r.Post("/login", h.login)
+		r.Post("/refresh", h.refresh)
+	})
 
 	// protected
 	router.Group(func(r chi.Router) {
-		r.Use(auth.Auth(jwtSecret))
-		r.Post("/", handler.create)
-		r.Get("/{id}", handler.findByID)
-		r.Patch("/{id}/deactivate", handler.deactivateByID)
-		r.Patch("/{id}/activate", handler.activateByID)
-		r.Delete("/{id}", handler.deleteByID)
-		r.Get("/me", handler.me)
+		r.Use(auth.Auth(c.JSONWebTokenSecret))
+		r.Get("/me", h.me)
+		r.Post("/", h.create)
+		r.Get("/{id}", h.findByID)
+		r.Patch("/{id}/deactivate", h.deactivateByID)
+		r.Patch("/{id}/activate", h.activateByID)
+		r.Delete("/{id}", h.deleteByID)
 	})
 
 	return router

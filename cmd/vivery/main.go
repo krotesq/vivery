@@ -27,6 +27,7 @@ import (
 func main() {
 
 	// load config
+	// this config struct should be passed down to all functions that need it
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalln(err)
@@ -34,7 +35,7 @@ func main() {
 
 	// connect to database
 	ctx := context.Background()
-	pool, err := db.Connect(ctx, cfg.DatabaseUser, cfg.DatabasePassword, cfg.DatabaseHost, cfg.DatabasePort, cfg.DatabaseName)
+	pool, err := db.Connect(ctx, cfg)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %s", err.Error())
 	}
@@ -46,7 +47,7 @@ func main() {
 
 	// enable middleware
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedOrigins:   cfg.AllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		ExposedHeaders:   []string{"Link"},
@@ -62,7 +63,7 @@ func main() {
 	// the account router has public and protected routes so we
 	// mount the account router seperate and configure auth inside
 	// we could move the /login, /register, /logout & /reset to the auth package sometime
-	routerApi.Mount("/account", account.RoutesWithPool(pool, cfg.JSONWebTokenSecret, cfg.JSONWebTokenIssuer, cfg.JSONWebTokenExpireMinutes, cfg.RefreshTokenExpireDays, cfg.BcryptCost))
+	routerApi.Mount("/account", account.RoutesWithPool(pool, cfg))
 
 	// protected routes
 	routerApi.Group(func(r chi.Router) {
@@ -86,18 +87,22 @@ func main() {
 
 	// run server with graceful shutdown
 	server := &http.Server{
-		Addr:    fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
-		Handler: router,
+		Addr:         fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+		Handler:      router,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
 
+	// we run the server in a seperate go routine, so we can handle signals from the os
 	go func() {
 		log.Printf("Server running at %s:%s", cfg.Host, cfg.Port)
+		log.Printf("Allowed origins: %v", cfg.AllowedOrigins)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("error: %s", err.Error())
 		}
 	}()
 
-	// wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit

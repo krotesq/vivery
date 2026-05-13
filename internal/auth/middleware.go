@@ -22,7 +22,7 @@ func AccountIDFromContext(ctx context.Context) (string, bool) {
 	return id, ok
 }
 
-func Auth(jwtSecret string) func(http.Handler) http.Handler {
+func Auth(secret []byte) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// get jwt cookie from request
@@ -38,7 +38,7 @@ func Auth(jwtSecret string) func(http.Handler) http.Handler {
 			}
 
 			// verify jwt
-			sub, err := ValidateJWT(cookie.Value, jwtSecret)
+			sub, err := ValidateJWT(cookie.Value, secret)
 			if err != nil {
 				response.Send(w, http.StatusUnauthorized, "Auth failed", nil)
 				return
