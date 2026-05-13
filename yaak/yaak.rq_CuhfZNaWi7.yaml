@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_CuhfZNaWi7
 createdAt: 2026-05-06T18:44:27.747666316
-updatedAt: 2026-05-06T18:48:28.849170208
+updatedAt: 2026-05-13T21:40:14.536009357
 workspaceId: wk_TU49JZpjpe
 folderId: fl_Ddbs3yDN22
 authentication: {}
@@ -27,7 +27,7 @@ headers:
   value: application/json
   id: G3hXPhQHue
 method: POST
-name: localhost:3000/api/target/rtmp
+name: /rtmp
 sortPriority: 2000.0
 url: http://localhost:3000/api/target/rtmp
 urlParameters: []

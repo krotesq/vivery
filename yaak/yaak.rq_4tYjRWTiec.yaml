@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_4tYjRWTiec
 createdAt: 2026-05-06T17:38:17.840663509
-updatedAt: 2026-05-06T18:45:51.773821730
+updatedAt: 2026-05-13T21:16:43.131125221
 workspaceId: wk_TU49JZpjpe
 folderId: fl_C2gZXDHCRd
 authentication: {}
@@ -17,7 +17,7 @@ headers:
   value: application/json
   id: G3hXPhQHue
 method: DELETE
-name: localhost:3000/api/source/rtmp Copy 2
+name: /{id}
 sortPriority: 3000.0
 url: http://localhost:3000/api/source/dd4d0bce-bf34-4a47-b4a8-f103e7bfb9ee
 urlParameters:

@@ -16,7 +16,6 @@ func toRtmpDTO(rtmp *rtmp) rtmpDTO {
 	return rtmpDTO{
 		SourceID:  rtmp.SourceID,
 		URL:       rtmp.URL,
-		StreamKey: rtmp.StreamKey,
 		CreatedAt: rtmp.CreatedAt,
 	}
 }

@@ -68,13 +68,13 @@ func (handler *handler) createWithRtmp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var _targetWithDetailsDTO targetWithDetailsDTO
-	if err := util.ParseBody(r.Body, &_targetWithDetailsDTO); err != nil {
+	var targetWithRtmpDTO createTargetWithRtmpDTO
+	if err := util.ParseBody(r.Body, &targetWithRtmpDTO); err != nil {
 		response.Send(w, http.StatusBadRequest, "Could not parse request body", nil)
 		return
 	}
 
-	targetModel, rtmpModel, err := handler.service.createWithRtmp(r.Context(), _targetWithDetailsDTO.Target.Name, _targetWithDetailsDTO.Target.Description, _targetWithDetailsDTO.Rtmp.URL, _targetWithDetailsDTO.Rtmp.StreamKey, accountID)
+	targetModel, rtmpModel, err := handler.service.createWithRtmp(r.Context(), targetWithRtmpDTO.Target.Name, targetWithRtmpDTO.Target.Description, targetWithRtmpDTO.Rtmp.URL, targetWithRtmpDTO.Rtmp.StreamKey, accountID)
 	if err != nil {
 		response.Send(w, http.StatusBadRequest, "Could not create target", nil)
 		return

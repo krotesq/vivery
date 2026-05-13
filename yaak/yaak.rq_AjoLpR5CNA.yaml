@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_AjoLpR5CNA
 createdAt: 2026-05-06T18:44:27.747311224
-updatedAt: 2026-05-06T18:48:16.446368203
+updatedAt: 2026-05-13T22:16:43.400173275
 workspaceId: wk_TU49JZpjpe
 folderId: fl_Ddbs3yDN22
 authentication: {}
@@ -17,9 +17,9 @@ headers:
   value: application/json
   id: G3hXPhQHue
 method: GET
-name: localhost:3000/api/source/rtmp Copy
+name: /rtmp/{id}
 sortPriority: 1000.0
-url: http://localhost:3000/api/target/rtmp/5b2ebe83-5fc0-4d6d-b382-de7b84a5bfda
+url: http://localhost:3000/api/target/rtmp/ef7a26c5-8ffc-4d4c-9461-53e01af4edab
 urlParameters:
 - enabled: true
   name: ''

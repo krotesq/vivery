@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_GAkbsSqBGD
 createdAt: 2026-05-06T18:44:27.746428824
-updatedAt: 2026-05-06T18:44:41.361725614
+updatedAt: 2026-05-13T21:16:54.965997134
 workspaceId: wk_TU49JZpjpe
 folderId: fl_Ddbs3yDN22
 authentication: {}
@@ -17,7 +17,7 @@ headers:
   value: application/json
   id: G3hXPhQHue
 method: GET
-name: localhost:3000/api/source/rtmp Copy 3
+name: /
 sortPriority: 0.0
 url: http://localhost:3000/api/target/
 urlParameters:
