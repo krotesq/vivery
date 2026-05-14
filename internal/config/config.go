@@ -20,6 +20,11 @@ type Config struct {
 	DatabaseName     string
 	DatabaseSSLMode  string
 
+	RedisHost string
+	RedisPort string
+	RedisPassword string
+	RedisProtocolVersion int
+
 	AllowedOrigins []string
 
 	JSONWebTokenSecret        []byte
@@ -31,45 +36,63 @@ type Config struct {
 	BcryptCost int
 }
 
-func Load() (*Config, error) {
+func Load() (cfg *Config, err error) {
+
+	// convert, decode and validate special env vars
 	jwtExp, err := strconv.Atoi(getEnvOrDefault("JWT_EXP_MINUTES", "5"))
 	if err != nil {
-		return nil, fmt.Errorf("invalid JWT_EXP_MINUTES: %w", err)
+		return nil, fmt.Errorf("invalid JWT_EXP_MINUTES: %s", err.Error())
 	}
 
 	refreshExp, err := strconv.Atoi(getEnvOrDefault("REFRESH_EXP_DAYS", "7"))
 	if err != nil {
-		return nil, fmt.Errorf("invalid REFRESH_EXP_DAYS: %w", err)
+		return nil, fmt.Errorf("invalid REFRESH_EXP_DAYS: %s", err.Error())
 	}
 
 	bcryptCost, err := strconv.Atoi(getEnvOrDefault("BCRYPT_COST", "12"))
 	if err != nil {
-		return nil, fmt.Errorf("invalid BCRYPT_COST: %w", err)
+		return nil, fmt.Errorf("invalid BCRYPT_COST: %s", err.Error())
 	}
 
-	// decode jwt secret
+	redisProtocolVersion, err := strconv.Atoi(getEnvOrDefault("REDIS_PROTOCOL_VERSION", "2"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid REDIS_PROTOCOL_VERSION: %s", err.Error())
+	}
+	if redisProtocolVersion != 2 && redisProtocolVersion != 3 {
+		return nil, fmt.Errorf("invalid REDIS_PROTOCOL_VERSION: version needs to be 2 or 3")
+	}
+
 	secret, err := base64.StdEncoding.DecodeString(getEnvOrDefault("JWT_SECRET", ""))
 	if err != nil {
-		return nil, fmt.Errorf("could not decode jwt secret: %w", err)
+		return nil, fmt.Errorf("could not decode jwt secret: %s", err.Error())
 	}
-
 	if len(secret) == 0 {
 		return nil, fmt.Errorf("JWT_SECRET can not be empty")
 	}
 
-	// split allowed origins
 	allowedOrigins := strings.Split(getEnvOrDefault("ALLOWED_ORIGINS", "localhost:3000"), ",")
 
-	cfg := &Config{
+	sslModes := []string{"disable", "allow", "prefer", "require", "verify-ca", "verify-full"}
+	sslMode := getEnvOrDefault("DATABASE_SSLMODE", "prefer")
+	if !slices.Contains(sslModes, sslMode) {
+		return nil, fmt.Errorf("DATABASE_SSLMODE can only be %v", sslModes)
+	}
+
+	cfg = &Config{
 		Host: getEnvOrDefault("HOST", "0.0.0.0"),
 		Port: getEnvOrDefault("PORT", "3000"),
 
-		DatabaseUser:     getEnvOrDefault("DATABASE_USER", ""),
-		DatabasePassword: getEnvOrDefault("DATABASE_PASSWORD", ""),
+		DatabaseUser:     getEnvOrDefault("DATABASE_USER", "vivery"),
+		DatabasePassword: getEnvOrDefault("DATABASE_PASSWORD", "vivery"),
 		DatabaseHost:     getEnvOrDefault("DATABASE_HOST", "localhost"),
 		DatabasePort:     getEnvOrDefault("DATABASE_PORT", "5432"),
 		DatabaseName:     getEnvOrDefault("DATABASE_NAME", "vivery"),
-		DatabaseSSLMode:  getEnvOrDefault("DATABASE_SSLMODE", "prefer"),
+		DatabaseSSLMode:  sslMode,
+
+		RedisHost: getEnvOrDefault("REDIS_HOST", "localhost"),
+		RedisPort: getEnvOrDefault("REDIS_PORT", "6379"),
+		RedisPassword: getEnvOrDefault("REDIS_PASSWORD", ""),
+		RedisProtocolVersion: redisProtocolVersion,
 
 		JSONWebTokenSecret:        secret,
 		JSONWebTokenExpireMinutes: jwtExp,
@@ -80,19 +103,6 @@ func Load() (*Config, error) {
 		RefreshTokenExpireDays: refreshExp,
 
 		BcryptCost: bcryptCost,
-	}
-
-	if cfg.DatabaseUser == "" {
-		return nil, fmt.Errorf("DATABASE_USER is required")
-	}
-
-	if cfg.DatabasePassword == "" {
-		return nil, fmt.Errorf("DATABASE_PASSWORD is required")
-	}
-
-	sslModes := []string{"disable", "allow", "prefer", "require", "verify-ca", "verify-full"}
-	if !slices.Contains(sslModes, cfg.DatabaseSSLMode) {
-		return nil, fmt.Errorf("DATABASE_SSLMODE can only be %v", sslModes)
 	}
 
 	return cfg, nil
