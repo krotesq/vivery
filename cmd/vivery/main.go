@@ -33,14 +33,23 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// connect to database
+	// background context for database connections
 	ctx := context.Background()
-	pool, err := db.Connect(ctx, cfg)
+
+	// connect to postgres and redis database
+	pool, err := db.ConnectPostgres(ctx, cfg)
 	if err != nil {
-		log.Fatalf("failed to connect to database: %s", err.Error())
+		log.Fatalf("Failed to connect to postgres: %s", err.Error())
 	}
 	defer pool.Close()
-	log.Println("connected to database")
+	log.Println("Connected to postgres")
+
+	rdb, err := db.ConnectRedis(ctx, cfg)
+	if err != nil {
+		log.Fatalf("Failed to connect to redis: %s", err.Error())
+	}
+	log.Println("Connected to redis")
+	defer rdb.Close()
 
 	// create main router
 	router := chi.NewRouter()
@@ -107,14 +116,14 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("shutting down server...")
+	log.Println("Shutting down server...")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("server forced to shutdown: %s", err.Error())
+		log.Fatalf("Server forced to shutdown: %s", err.Error())
 	}
 
-	log.Println("server stopped")
+	log.Println("Server stopped")
 }

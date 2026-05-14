@@ -9,7 +9,7 @@ import (
 	"github.com/krotesq/vivery/internal/config"
 )
 
-func Connect(ctx context.Context, cfg *config.Config) (*pgxpool.Pool, error) {
+func ConnectPostgres(ctx context.Context, cfg *config.Config) (*pgxpool.Pool, error) {
 	dsn := (&url.URL{
 		Scheme:   "postgres",
 		User:     url.UserPassword(cfg.DatabaseUser, cfg.DatabasePassword),
