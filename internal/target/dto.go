@@ -16,6 +16,7 @@ type targetDTO struct {
 type rtmpDTO struct {
 	TargetID  string    `json:"targetId"`
 	URL       string    `json:"url"`
+	StreamKey string    `json:"streamKey"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 

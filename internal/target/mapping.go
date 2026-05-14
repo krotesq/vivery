@@ -16,6 +16,16 @@ func toRtmpDTO(rtmp *rtmp) rtmpDTO {
 	return rtmpDTO{
 		TargetID:  rtmp.TargetID,
 		URL:       rtmp.URL,
+		StreamKey: "********",
+		CreatedAt: rtmp.CreatedAt,
+	}
+}
+
+func toRtmpDTOWithStreamKey(rtmp *rtmp) rtmpDTO {
+	return rtmpDTO{
+		TargetID:  rtmp.TargetID,
+		URL:       rtmp.URL,
+		StreamKey: rtmp.StreamKey,
 		CreatedAt: rtmp.CreatedAt,
 	}
 }

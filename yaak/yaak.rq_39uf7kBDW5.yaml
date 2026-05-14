@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_39uf7kBDW5
 createdAt: 2026-05-06T17:37:36.090678722
-updatedAt: 2026-05-13T22:16:29.113166524
+updatedAt: 2026-05-14T15:04:04.616021321
 workspaceId: wk_TU49JZpjpe
 folderId: fl_C2gZXDHCRd
 authentication: {}
@@ -19,7 +19,7 @@ headers:
 method: GET
 name: /rtmp/{id}
 sortPriority: 1000.0
-url: http://localhost:3000/api/source/rtmp/8d2d40f1-2732-47ce-ab07-fc455cf2d10d
+url: http://localhost:3000/api/source/rtmp/794f5048-f432-4255-98ca-17cd0ff1feb0
 urlParameters:
 - enabled: true
   name: ''

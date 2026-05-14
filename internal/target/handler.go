@@ -80,7 +80,7 @@ func (handler *handler) createWithRtmp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rtmpDto := toRtmpDTO(rtmpModel)
+	rtmpDto := toRtmpDTOWithStreamKey(rtmpModel)
 	result := targetWithDetailsDTO{
 		Target: toTargetDTO(targetModel),
 		Rtmp:   &rtmpDto,
