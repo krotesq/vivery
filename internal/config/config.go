@@ -29,6 +29,9 @@ type Config struct {
 	RefreshTokenExpireDays int
 
 	BcryptCost int
+
+	PublicIP string
+	Domains  string
 }
 
 func Load() (*Config, error) {
@@ -80,6 +83,9 @@ func Load() (*Config, error) {
 		RefreshTokenExpireDays: refreshExp,
 
 		BcryptCost: bcryptCost,
+
+		PublicIP: getEnvOrDefault("PUBLIC_IP", "127.0.0.1"),
+		Domains:  getEnvOrDefault("DOMAINS", "localhost"),
 	}
 
 	if cfg.DatabaseUser == "" {

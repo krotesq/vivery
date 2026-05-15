@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_CuhfZNaWi7
 createdAt: 2026-05-06T18:44:27.747666316
-updatedAt: 2026-05-13T21:40:14.536009357
+updatedAt: 2026-05-14T20:08:58.890749979
 workspaceId: wk_TU49JZpjpe
 folderId: fl_Ddbs3yDN22
 authentication: {}
@@ -11,11 +11,11 @@ body:
   text: |-
     {
       "target": {
-        "name": "test",
+        "name": "test8",
         "description": "test target description",
       },
       "rtmp": {
-        "url": "localhost:1935/test",
+        "url": "rtmps://127.0.0.1:1935/test",
         "stream_key": "testkey"
       }
     }
