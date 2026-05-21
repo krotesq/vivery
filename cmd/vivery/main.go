@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 	"time"
 
@@ -22,6 +21,7 @@ import (
 	"github.com/krotesq/vivery/internal/mediamtx"
 	"github.com/krotesq/vivery/internal/source"
 	"github.com/krotesq/vivery/internal/target"
+	"github.com/krotesq/vivery/ui"
 )
 
 func main() {
@@ -82,17 +82,24 @@ func main() {
 		r.Mount("/mediamtx", mediamtx.RoutesWithPool(pool))
 	})
 
-	// create web router
-	routerWeb := chi.NewRouter()
-
-	// add fs to web router
-	webDir := filepath.Join(".", "web")
-	fileServer := http.StripPrefix("/", http.FileServer(http.Dir(webDir)))
-	routerWeb.Handle("/*", fileServer)
-
 	// mount all routers to main router
 	router.Mount("/api", routerApi)
-	router.Mount("/", routerWeb)
+
+	// embed ui
+	sub, err := ui.FS()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	router.Handle("/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, err := sub.Open(r.URL.Path[1:]) // try to open requested file
+			if err != nil {
+					// serve index.html if path is not a real file
+					http.ServeFileFS(w, r, sub, "index.html")
+					return
+			}
+			http.FileServer(http.FS(sub)).ServeHTTP(w, r)
+	}))
 
 	// run server with graceful shutdown
 	server := &http.Server{

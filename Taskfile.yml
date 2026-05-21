@@ -6,9 +6,10 @@ dotenv: [".env"]
 
 tasks:
   default:
-    desc: Runs the core in dev mode
+    desc: Runs the core and the ui in dev mode
     cmds:
       - go run cmd/vivery/main.go
+      - cd ui && bun run dev
 
   infra:
     desc: Runs all needed infra
@@ -23,9 +24,37 @@ tasks:
   ui:
     desc: Runs ui in dev mode
     cmds:
-      - bun run dev
+      - cd ui && bun run dev
+
+  uib:
+    desc: Build the ui
+    cmds:
+      - cd ui && bun run build
 
   assets:
     desc: Generates all needed PWA assets
     cmds:
       - bunx @vite-pwa/assets-generator --preset minimal-2023 public/logo.svg
+
+  build:
+    desc: Builds the complete project
+    cmds:
+      - cd ui && bun run build
+      - go build ./cmd/vivery
+  
+  build-noui:
+    desc: Build the complete project with no ui embedded
+    cmds:
+      - go build -tags noui ./cmd/vivery
+
+  run:
+    desc: Runs the full project with embedded ui
+    cmds:
+      - cd ui && bun run build
+      - go run ./cmd/vivery
+  
+  run:
+    desc: Runs the full project with embedded ui
+    cmds:
+      - cd ui && bun run build
+      - go run ./cmd/vivery
