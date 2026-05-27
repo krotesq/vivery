@@ -34,6 +34,9 @@ type Config struct {
 	RefreshTokenExpireDays int
 
 	BcryptCost int
+
+	PublicIP string
+	Domains  string
 }
 
 func Load() (cfg *Config, err error) {
@@ -103,6 +106,9 @@ func Load() (cfg *Config, err error) {
 		RefreshTokenExpireDays: refreshExp,
 
 		BcryptCost: bcryptCost,
+
+		PublicIP: getEnvOrDefault("PUBLIC_IP", "127.0.0.1"),
+		Domains:  getEnvOrDefault("DOMAINS", "localhost"),
 	}
 
 	return cfg, nil

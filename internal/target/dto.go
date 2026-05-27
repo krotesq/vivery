@@ -1,6 +1,8 @@
 package target
 
-import "time"
+import (
+	"time"
+)
 
 type targetDTO struct {
 	ID           string    `json:"id"`
@@ -14,7 +16,7 @@ type targetDTO struct {
 type rtmpDTO struct {
 	TargetID  string    `json:"targetId"`
 	URL       string    `json:"url"`
-	StreamKey string    `json:"stream_key"`
+	StreamKey string    `json:"streamKey"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
@@ -22,4 +24,23 @@ type targetWithDetailsDTO struct {
 	Target targetDTO `json:"target"`
 	// add all available types here
 	Rtmp *rtmpDTO `json:"rtmp"`
+}
+
+// ----------------------
+// CREATE DTOs
+// ----------------------
+
+type createTargetDTO struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type createRtmpDTO struct {
+	URL       string `json:"url"`
+	StreamKey string `json:"stream_key"`
+}
+
+type createTargetWithRtmpDTO struct {
+	Target createTargetDTO `json:"target"`
+	Rtmp   createRtmpDTO   `json:"rtmp"`
 }
