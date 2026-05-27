@@ -5,11 +5,13 @@ version: "3"
 dotenv: [".env"]
 
 tasks:
-  default:
+  dev:
+    deps:
+      - task: server
+        async: true
+      - task: ui
+        async: true
     desc: Runs the core and the ui in dev mode
-    cmds:
-      - go run cmd/vivery/main.go
-      - cd ui && bun run dev
 
   infra:
     desc: Runs all needed infra
@@ -17,21 +19,25 @@ tasks:
       - docker compose -f docker-compose.infra.yaml up -d
 
   migrate:
+    deps:
+      - task: infra
     desc: Runs all migrations
     cmds:
       - tern migrate --migrations migrations
+
+  server:
+    deps:
+      - task: migrate
+    desc: Runs the server
+    cmds:
+      - go run cmd/vivery/main.go
 
   ui:
     desc: Runs ui in dev mode
     cmds:
       - cd ui && bun run dev
 
-  uib:
-    desc: Build the ui
-    cmds:
-      - cd ui && bun run build
-
-  assets:
+  gen-assets:
     desc: Generates all needed PWA assets
     cmds:
       - bunx @vite-pwa/assets-generator --preset minimal-2023 public/logo.svg
@@ -47,12 +53,6 @@ tasks:
     cmds:
       - go build -tags noui ./cmd/vivery
 
-  run:
-    desc: Runs the full project with embedded ui
-    cmds:
-      - cd ui && bun run build
-      - go run ./cmd/vivery
-  
   run:
     desc: Runs the full project with embedded ui
     cmds:
