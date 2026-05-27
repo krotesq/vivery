@@ -54,7 +54,7 @@ services:
     container_name: vivery-redisinsight
     restart: unless-stopped
     ports:
-      - "5540:5540"
+      - "8090:5540"
     depends_on:
       redis:
         condition: service_healthy
