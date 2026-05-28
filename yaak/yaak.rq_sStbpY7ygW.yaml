@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_sStbpY7ygW
 createdAt: 2026-05-05T21:27:31.687694052
-updatedAt: 2026-05-06T18:05:07.123343745
+updatedAt: 2026-05-14T15:03:48.628307748
 workspaceId: wk_TU49JZpjpe
 folderId: fl_C2gZXDHCRd
 authentication: {}
@@ -11,7 +11,7 @@ body:
   text: |-
     {
       "source": {
-        "name": "test",
+        "name": "test2",
         "description": "test description",
       },
       "rtmp": {
@@ -27,7 +27,7 @@ headers:
   value: application/json
   id: G3hXPhQHue
 method: POST
-name: ''
+name: /rtmp
 sortPriority: 2000.0
 url: http://localhost:3000/api/source/rtmp
 urlParameters: []

@@ -78,7 +78,7 @@ func main() {
 	routerApi.Group(func(r chi.Router) {
 		r.Use(auth.Auth(cfg.JSONWebTokenSecret))
 		r.Mount("/source", source.RoutesWithPool(pool))
-		r.Mount("/target", target.RoutesWithPool(pool))
+		r.Mount("/target", target.RoutesWithPool(pool, cfg))
 		r.Mount("/mediamtx", mediamtx.RoutesWithPool(pool))
 	})
 

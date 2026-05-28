@@ -42,7 +42,6 @@ func (handler *handler) findWithDetailsByID(w http.ResponseWriter, r *http.Reque
 	// TODO: implement
 }
 
-
 func (handler *handler) findWithRtmpByID(w http.ResponseWriter, r *http.Request) {
 	accountID, ok := auth.AccountIDFromContext(r.Context())
 	if !ok {
@@ -73,20 +72,19 @@ func (handler *handler) createWithRtmp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: needs own create dto for rtmp
-	var _sourceWithDetailsDTO sourceWithDetailsDTO
-	if err := util.ParseBody(r.Body, &_sourceWithDetailsDTO); err != nil {
+	var sourceWithRtmpDTO createSourceWithRtmpDTO
+	if err := util.ParseBody(r.Body, &sourceWithRtmpDTO); err != nil {
 		response.Send(w, http.StatusBadRequest, "Failed to create source", nil)
 		return
 	}
 
-	sourceModel, rtmpModel, err := handler.service.createWithRtmp(r.Context(), _sourceWithDetailsDTO.Source.Name, _sourceWithDetailsDTO.Source.Description, _sourceWithDetailsDTO.Rtmp.URL, _sourceWithDetailsDTO.Rtmp.StreamKey, accountID)
+	sourceModel, rtmpModel, err := handler.service.createWithRtmp(r.Context(), sourceWithRtmpDTO.Source.Name, sourceWithRtmpDTO.Source.Description, sourceWithRtmpDTO.Rtmp.URL, sourceWithRtmpDTO.Rtmp.StreamKey, accountID)
 	if err != nil {
 		response.Send(w, http.StatusBadRequest, "Failed to create source", nil)
 		return
 	}
 
-	rtmpDto := toRtmpDTO(rtmpModel)
+	rtmpDto := toRtmpDTOWithStreamKey(rtmpModel)
 	result := sourceWithDetailsDTO{
 		Source: toSourceDTO(sourceModel),
 		Rtmp:   &rtmpDto,
