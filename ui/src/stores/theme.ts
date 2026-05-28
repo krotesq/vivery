@@ -5,7 +5,7 @@ import { useLocalStorage } from "@vueuse/core"
 export const useThemeStore = defineStore("theme", () => {
 
   // define data
-  const theme = useLocalStorage("theme", "dark")
+  const theme = useLocalStorage("theme", "cupcake")
 
   // create setter
   function setTheme(t: string) {

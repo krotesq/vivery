@@ -1,0 +1,82 @@
+services:
+  vivery:
+    build: .
+    container_name: vivery
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: vivery
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-vivery}
+      DATABASE_NAME: vivery
+      DATABASE_SSLMODE: disable
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER:-vivery}
+      JWT_EXP_MINUTES: ${JWT_EXP_MINUTES:-5}
+      REFRESH_EXP_DAYS: ${REFRESH_EXP_DAYS:-7}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: vivery-mediamtx
+    restart: unless-stopped
+    ports:
+      - "8554:8554"
+      - "8000:8000/udp"
+      - "8001:8001/udp"
+      - "1935:1935"
+      - "8888:8888"
+      - "8889:8889"
+      - "8189:8189/udp"
+      - "8890:8890/udp"
+      - "9997:9997"
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+
+  postgres:
+    image: postgres:17
+    container_name: vivery-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vivery
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vivery}
+      POSTGRES_DB: vivery
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vivery"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8.6-alpine
+    container_name: vivery-redis
+    restart: unless-stopped
+    command: >
+      sh -c '[ -n "$$REDIS_PASSWORD" ] && exec redis-server --requirepass "$$REDIS_PASSWORD" || exec redis-server'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:

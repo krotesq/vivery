@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+ui/node_modules/
+
+# Build outputs
+ui/dist/
+ui/dev-dist/
+
+# Git
+.git/
+.gitignore
+
+# Local env
+.env
+.env.local
+
+# Dev tools
+.task/
+yaak/
+
+# Go build artifacts
+vivery

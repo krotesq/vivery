@@ -1,3 +1,3 @@
 <template>
-  <h1>Welcome to vivery</h1>
+  <h2>Home - WIP</h2>
 </template>

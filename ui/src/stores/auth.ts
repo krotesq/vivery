@@ -1,19 +1,15 @@
-import { defineStore } from "pinia"
-import { ref, computed } from "vue"
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { api } from '@/utils/api'
+import type { AccountMe, LoginRequest } from '@/types'
 
-export const useAuthStore = defineStore("auth", () => {
-  const user = ref(null)
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref<AccountMe | null>(null)
   const checked = ref(false)
   const isLoggedIn = computed(() => user.value !== null)
 
-  async function login(username: string, password: string) {
-    const res = await fetch("/api/account/login", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({username, password})
-    })
-    if (!res.ok) throw new Error("Error while logging in")
-    user.value = await res.json()
+  async function login(payload: LoginRequest) {
+    user.value = await api.post<AccountMe>('/account/login', payload)
   }
 
   function logout() {
@@ -22,25 +18,15 @@ export const useAuthStore = defineStore("auth", () => {
 
   async function check() {
     try {
-      const res = await fetch("/api/account/me")
-      if (res.ok) {
-        user.value = await res.json()
-      }
-      else {
-        user.value = null
-      }
-    }
-    catch {
+      user.value = await api.get<AccountMe>('/account/me')
+    } catch {
       user.value = null
-    }
-    finally {
+    } finally {
       checked.value = true
     }
   }
 
   return { user, isLoggedIn, checked, login, logout, check }
 }, {
-  persist: { // ensure that the store is still available after page reload
-    pick: ["user"]
-  }
+  persist: { pick: ['user'] }
 })

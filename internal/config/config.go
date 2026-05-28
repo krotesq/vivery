@@ -20,9 +20,9 @@ type Config struct {
 	DatabaseName     string
 	DatabaseSSLMode  string
 
-	RedisHost string
-	RedisPort string
-	RedisPassword string
+	RedisHost            string
+	RedisPort            string
+	RedisPassword        string
 	RedisProtocolVersion int
 
 	AllowedOrigins []string
@@ -70,7 +70,7 @@ func Load() (cfg *Config, err error) {
 		return nil, fmt.Errorf("JWT_SECRET can not be empty")
 	}
 
-	allowedOrigins := strings.Split(getEnvOrDefault("ALLOWED_ORIGINS", "localhost:3000"), ",")
+	allowedOrigins := strings.Split(getEnvOrDefault("ALLOWED_ORIGINS", "http://localhost:3000"), ",")
 
 	sslModes := []string{"disable", "allow", "prefer", "require", "verify-ca", "verify-full"}
 	sslMode := getEnvOrDefault("DATABASE_SSLMODE", "prefer")
@@ -89,9 +89,9 @@ func Load() (cfg *Config, err error) {
 		DatabaseName:     getEnvOrDefault("DATABASE_NAME", "vivery"),
 		DatabaseSSLMode:  sslMode,
 
-		RedisHost: getEnvOrDefault("REDIS_HOST", "localhost"),
-		RedisPort: getEnvOrDefault("REDIS_PORT", "6379"),
-		RedisPassword: getEnvOrDefault("REDIS_PASSWORD", ""),
+		RedisHost:            getEnvOrDefault("REDIS_HOST", "localhost"),
+		RedisPort:            getEnvOrDefault("REDIS_PORT", "6379"),
+		RedisPassword:        getEnvOrDefault("REDIS_PASSWORD", ""),
 		RedisProtocolVersion: redisProtocolVersion,
 
 		JSONWebTokenSecret:        secret,
