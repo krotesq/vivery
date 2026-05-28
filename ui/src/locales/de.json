@@ -1,6 +1,20 @@
 {
   "notFound": {
-    "title": "Diese Seite haben wir nicht gefunden",
-    "backHome": "Zurück zum Dashboard"
+    "title": "Ohje, diese Seite haben wir nicht gefunden",
+    "backHome": "Zurück nachhause"
+  },
+
+  "account": {
+    "username": "Benutzername",
+    "password": "Passwort",
+    "login": "Einloggen",
+    "logout": "Ausloggen",
+    "resetPassword": "Passwort zurücksetzen",
+    "deleteAccount": "Account löschen",
+    "deactivateAccount": "Account deaktivieren"
+  },
+
+  "misc": {
+    "loading": "Laden"
   }
 }

@@ -32,9 +32,15 @@ const router = createRouter({
 
     // not found needs to be the last route!
     {
-      path: "/:path(.*)*",
+      path: "/",
       name: "not-found",
-      component: () => import("@/views/NotFoundView.vue")
+      component: () => import("@/layouts/MinimalLayout.vue"),
+      children: [
+        {
+          path: ":path(.*)*",
+          component: () => import("@/views/NotFoundView.vue")
+        }
+      ]
     },
   ],
 })

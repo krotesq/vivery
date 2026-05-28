@@ -1,13 +1,16 @@
 <script setup lang="ts">
-  import { RouterLink } from 'vue-router';
-
+import { RouterLink } from 'vue-router';
 </script>
 
 <template>
-
-  <h1>{{ $t("notFound.title") }}</h1>
-  <RouterLink to="/" class="btn btn-primary">
-    {{ $t("notFound.backHome") }}
-  </RouterLink>
-
+<div class="card bg-base-100 shadow-sm w-full md:w-96">
+    <div class="card-body">
+        <p>{{ $t("notFound.title") }}</p>
+        <div class="card-actions">
+            <RouterLink to="/" class="btn btn-primary w-full">
+            {{ $t("notFound.backHome") }}
+            </RouterLink>
+        </div>
+    </div>
+</div>
 </template>

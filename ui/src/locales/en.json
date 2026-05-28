@@ -1,6 +1,20 @@
 {
   "notFound": {
     "title": "Oops, this site does not exist",
-    "backHome": "Back to the dashboard"
+    "backHome": "Go back home"
+  },
+
+  "account": {
+    "username": "Username",
+    "password": "Password",
+    "login": "Login",
+    "logout": "Logout",
+    "resetPassword": "Reset password",
+    "deleteAccount": "Delete account",
+    "deactivateAccount": "Deactivate account"
+  },
+
+  "misc": {
+    "loading": "Loading"
   }
 }

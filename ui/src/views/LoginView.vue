@@ -40,13 +40,13 @@ const onSubmit = handleSubmit(async (values) => {
 
     <div class="card-body">
 
-      <h2 class="text-xl">Login to vivery</h2>
+      <h2 class="text-xl">{{ $t("account.login") }}</h2>
 
-        <input v-model="username" v-bind="usernameAttrs" type="text" placeholder="Username" class="input w-full" />
-        <input v-model="password" v-bind="passwordAttrs" type="password" placeholder="Password" class="input w-full" />
+        <input v-model="username" v-bind="usernameAttrs" type="text" :placeholder="$t('account.username')" class="input w-full" />
+        <input v-model="password" v-bind="passwordAttrs" type="password" :placeholder="$t('account.password')" class="input w-full" />
       
       <div class="card-actions">
-        <button  type="submit" :disabled="loading" class="btn btn-primary w-full">{{ loading ? 'Loading...' : 'Login' }}</button>
+        <button  type="submit" :disabled="loading" class="btn btn-primary w-full">{{ loading ? `${$t("misc.loading")}...` : $t("account.login") }}</button>
       </div>
     </div>
   </form>
