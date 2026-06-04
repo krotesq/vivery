@@ -53,6 +53,11 @@ router.beforeEach(async (to) => {
     await auth.check()
   }
 
+  // redirect logged-in users away from login page
+  if (to.name === "login" && auth.isLoggedIn) {
+    return { path: "/" }
+  }
+
   // check if user is logged in, if not redirect to login
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
     return {
