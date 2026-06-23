@@ -16,6 +16,8 @@ services:
       - "9998:9998"
     volumes:
       - ./mediamtx.yml:/mediamtx.yml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   postgres:
     image: postgres:17

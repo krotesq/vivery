@@ -74,6 +74,9 @@ func main() {
 	// we could move the /login, /register, /logout & /reset to the auth package sometime
 	routerApi.Mount("/account", account.RoutesWithPool(pool, cfg))
 
+	// auth router
+	routerApi.Mount("/mediamtx/auth", mediamtx.AuthRouteWithPool(pool))
+
 	// protected routes
 	routerApi.Group(func(r chi.Router) {
 		r.Use(auth.Auth(cfg.JSONWebTokenSecret))
@@ -92,13 +95,13 @@ func main() {
 	}
 
 	router.Handle("/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_, err := sub.Open(r.URL.Path[1:]) // try to open requested file
-			if err != nil {
-					// serve index.html if path is not a real file
-					http.ServeFileFS(w, r, sub, "index.html")
-					return
-			}
-			http.FileServer(http.FS(sub)).ServeHTTP(w, r)
+		_, err := sub.Open(r.URL.Path[1:]) // try to open requested file
+		if err != nil {
+			// serve index.html if path is not a real file
+			http.ServeFileFS(w, r, sub, "index.html")
+			return
+		}
+		http.FileServer(http.FS(sub)).ServeHTTP(w, r)
 	}))
 
 	// run server with graceful shutdown

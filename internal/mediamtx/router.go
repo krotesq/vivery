@@ -7,5 +7,18 @@ import (
 
 func RoutesWithPool(pool *pgxpool.Pool) chi.Router {
 	router := chi.NewRouter()
+
+	return router
+}
+
+func AuthRouteWithPool(pool *pgxpool.Pool) chi.Router {
+	router := chi.NewRouter()
+
+	repository := newRepository(pool)
+	service := newService(repository)
+	handler := newHandler(service)
+
+	router.Post("/", handler.auth)
+
 	return router
 }

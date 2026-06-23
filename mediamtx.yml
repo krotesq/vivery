@@ -5,17 +5,22 @@ logLevel: info
 logDestinations: [stdout]
 
 # Authentication – open access (lock down for production)
-authMethod: internal
-authInternalUsers:
-  - user: any
-    pass:
-    ips: []
-    permissions:
-      - action: publish
-      - action: read
-      - action: playback
-      - action: api
-      - action: metrics
+# authMethod: internal
+# authInternalUsers:
+#   - user: any
+#     pass:
+#     ips: []
+#     permissions:
+#       - action: publish
+#       - action: read
+#       - action: playback
+#       - action: api
+#       - action: metrics
+
+# Authentication - HTTP vivery endpoint
+authMethod: http
+# local auth endpoint
+authHTTPAddress: http://host.docker.internal:3000/api/mediamtx/auth
 
 # Control API
 api: yes
