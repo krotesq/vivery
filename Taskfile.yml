@@ -8,9 +8,7 @@ tasks:
   dev:
     deps:
       - task: server
-        async: true
       - task: ui
-        async: true
     desc: Runs the core and the ui in dev mode
 
   infra:
@@ -30,7 +28,7 @@ tasks:
       - task: migrate
     desc: Runs the server
     cmds:
-      - go run cmd/vivery/main.go
+      - go run -tags noui cmd/vivery/main.go
 
   ui:
     desc: Runs ui in dev mode
