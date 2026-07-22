@@ -10,6 +10,7 @@
     "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/logo.svg"
   },
   "dependencies": {
+    "@heroicons/vue": "^2.2.0",
     "@tailwindcss/vite": "^4.3.0",
     "@tanstack/vue-query": "^5.100.11",
     "@vee-validate/zod": "^4.15.1",
