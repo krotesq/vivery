@@ -16,6 +16,7 @@
 coverage.*
 *.coverprofile
 profile.cov
+.gocache/
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
@@ -32,8 +33,10 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+.DS_Store
 
 todo.md
 REVIEW.md
+idea/
 
 .DS_Store

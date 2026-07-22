@@ -1,4 +1,5 @@
 //go:build !noui
+
 package ui
 
 import (

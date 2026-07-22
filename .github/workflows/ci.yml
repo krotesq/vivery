@@ -17,4 +17,12 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Build UI
+        working-directory: ui
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+
       - run: go build ./cmd/vivery
