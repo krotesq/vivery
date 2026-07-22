@@ -38,3 +38,5 @@ go.work.sum
 todo.md
 REVIEW.md
 idea/
+
+.DS_Store
