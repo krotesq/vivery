@@ -23,9 +23,7 @@
   const onSubmit = handleSubmit(async (values) => {
     loading.value = true
     try {
-      debugger
       await auth.login(values)
-      debugger
       const redirect = route.query.redirect as string | undefined
       await router.push(redirect ?? '/')
     } catch (e) {
