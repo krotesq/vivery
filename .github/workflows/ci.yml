@@ -19,7 +19,10 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
 
-      - name: Build UI
+      - name: Build (noui)
+        run: go build -tags noui ./cmd/vivery
+
+      - name: Build with ui
         working-directory: ui
         run: |
           bun install --frozen-lockfile

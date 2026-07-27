@@ -40,3 +40,7 @@ REVIEW.md
 .idea/
 
 .DS_Store
+
+# Node/npm artifacts (project uses bun, see ui/bun.lock)
+node_modules/
+package-lock.json
