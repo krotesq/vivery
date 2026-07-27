@@ -6,11 +6,18 @@ import {
   ArrowsRightLeftIcon,
   Squares2X2Icon,
   UserCircleIcon,
+  ArrowRightStartOnRectangleIcon,
+  SunIcon,
+  MoonIcon,
 } from "@heroicons/vue/24/outline"
 import LiquidGlassNav, { type GlassNavItem } from "@/components/LiquidGlassNav.vue"
+import { useAuthStore } from "@/stores/auth"
+import { useThemeStore } from "@/stores/theme"
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
+const themeStore = useThemeStore()
 
 type NavItem = GlassNavItem & { icon: Component }
 
@@ -27,10 +34,38 @@ const current = computed<string | number>({
     router.push({ name: String(name) })
   },
 })
+
+async function onLogout() {
+  await auth.logout()
+  await router.push({ name: "login" })
+}
+
+function toggleTheme() {
+  themeStore.setTheme(themeStore.theme === "dark" ? "light" : "dark")
+}
 </script>
 
 <template>
-  <div class="brand-badge bg-base-200">Vivery</div>
+  <button class="logout-btn btn btn-outline btn-error" @click="onLogout">
+    <ArrowRightStartOnRectangleIcon class="size-5" />
+    {{ $t("account.logout") }}
+  </button>
+
+  <div class="top-bar-right">
+    <label class="swap swap-rotate theme-toggle">
+      <input
+        type="checkbox"
+        :checked="themeStore.theme === 'dark'"
+        aria-label="Toggle theme"
+        @change="toggleTheme"
+      />
+      <SunIcon class="swap-on size-6" />
+      <MoonIcon class="swap-off size-6" />
+    </label>
+
+    <div class="brand-badge bg-base-200">Vivery</div>
+  </div>
+
   <nav class="default-nav">
     <LiquidGlassNav v-model="current" :items="items" aria-label="Main navigation">
       <template #icon="{ item }">
@@ -38,7 +73,7 @@ const current = computed<string | number>({
       </template>
     </LiquidGlassNav>
   </nav>
-  <main class="page-content">
+  <main class="page-content min-h-screen bg-base-300 text-base-content">
     <RouterView />
   </main>
 </template>
@@ -52,11 +87,28 @@ const current = computed<string | number>({
   translate: -50%;
 }
 
-.brand-badge {
+.logout-btn {
+  position: fixed;
+  z-index: 50;
+  top: 12px;
+  left: 20px;
+}
+
+.top-bar-right {
   position: fixed;
   z-index: 50;
   top: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.theme-toggle {
+  cursor: pointer;
+}
+
+.brand-badge {
   display: flex;
   align-items: center;
   justify-content: center;

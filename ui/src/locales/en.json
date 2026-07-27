@@ -6,15 +6,27 @@
 
   "account": {
     "username": "Username",
+    "usernamePlaceholder": "Enter username",
     "password": "Password",
+    "passwordPlaceholder": "Enter password",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Re-enter password",
     "login": "Login",
     "logout": "Logout",
+    "save": "Save",
+    "saved": "Profile has been saved",
     "resetPassword": "Reset password",
     "deleteAccount": "Delete account",
     "deactivateAccount": "Deactivate account"
   },
 
   "misc": {
-    "loading": "Loading"
+    "loading": "Loading",
+    "loginError": "Error while logging in"
+  },
+
+  "validation": {
+    "mandatory": "Mandatory field",
+    "passwordsMismatch": "Passwords do not match"
   }
 }

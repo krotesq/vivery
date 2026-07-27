@@ -6,15 +6,27 @@
 
   "account": {
     "username": "Benutzername",
+    "usernamePlaceholder": "Benutzername eingeben",
     "password": "Passwort",
+    "passwordPlaceholder": "Passwort eingeben",
+    "confirmPassword": "Passwort wiederholen",
+    "confirmPasswordPlaceholder": "Passwort erneut eingeben",
     "login": "Einloggen",
     "logout": "Ausloggen",
+    "save": "Speichern",
+    "saved": "Profil wurde gespeichert",
     "resetPassword": "Passwort zurücksetzen",
     "deleteAccount": "Account löschen",
     "deactivateAccount": "Account deaktivieren"
   },
 
   "misc": {
-    "loading": "Laden"
+    "loading": "Laden",
+    "loginError": "Fehler beim Einloggen"
+  },
+
+  "validation": {
+    "mandatory": "Pflichtfeld",
+    "passwordsMismatch": "Passwörter stimmen nicht überein"
   }
 }
