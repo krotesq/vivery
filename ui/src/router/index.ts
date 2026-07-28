@@ -26,6 +26,21 @@ const router = createRouter({
           path: "",
           name: "dashboard",
           component: () => import("@/views/HomeView.vue"),
+        },
+        {
+          path: "flow-editor",
+          name: "flow-editor",
+          component: () => import("@/views/FlowEditorView.vue"),
+        },
+        {
+          path: "source-target",
+          name: "source-target",
+          component: () => import("@/views/SourceTargetView.vue"),
+        },
+        {
+          path: "profil",
+          name: "profil",
+          component: () => import("@/views/ProfilView.vue"),
         }
       ]
     },

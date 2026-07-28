@@ -37,7 +37,7 @@ go.work.sum
 
 todo.md
 REVIEW.md
-idea/
+.idea/
 
 .DS_Store
 
