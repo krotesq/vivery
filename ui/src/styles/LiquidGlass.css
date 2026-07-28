@@ -1,0 +1,223 @@
+@theme {
+  --animate-glass-squish: glass-squish 440ms ease;
+
+  @keyframes glass-squish {
+    0%,
+    100% {
+      scale: 1 1;
+    }
+    50% {
+      scale: 1.15 1;
+    }
+  }
+}
+
+@utility liquid-glass-nav {
+  --c-glass: #bbbbbc;
+  --c-light: #fff;
+  --c-dark: #000;
+  --c-content: #fff;
+  --c-action: var(--color-primary, #0052f5);
+  --glass-reflex-dark: 1;
+  --glass-reflex-light: 1;
+  --saturation: 150%;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: max-content;
+  height: 70px;
+  padding: 8px 12px 10px;
+  border: 0;
+  border-radius: 99em;
+  color: var(--c-content);
+  background-color: color-mix(in srgb, var(--c-glass) 12%, transparent);
+  backdrop-filter: blur(8px) url(#liquid-glass-nav) saturate(var(--saturation));
+  -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
+  box-shadow:
+    inset 0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 10%),
+        transparent
+      ),
+    inset 1.8px 3px 0 -2px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 90%),
+        transparent
+      ),
+    inset -2px -2px 0 -2px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 80%),
+        transparent
+      ),
+    inset -3px -8px 1px -6px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 60%),
+        transparent
+      ),
+    inset -0.3px -1px 4px 0
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 12%),
+        transparent
+      ),
+    inset -1.5px 2.5px 0 -2px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 20%),
+        transparent
+      ),
+    inset 0 3px 4px -2px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 20%),
+        transparent
+      ),
+    inset 2px -6.5px 1px -4px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 10%),
+        transparent
+      ),
+    0 1px 5px 0
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 10%),
+        transparent
+      ),
+    0 6px 16px 0
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 8%),
+        transparent
+      );
+  transition:
+    background-color 400ms cubic-bezier(1, 0, 0.4, 1),
+    box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
+
+  @media (prefers-color-scheme: dark) {
+    --glass-reflex-dark: 2;
+    --glass-reflex-light: 0.3;
+  }
+}
+
+@utility liquid-glass-nav-option {
+  --c: var(--c-content);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  min-width: 68px;
+  height: 100%;
+  padding: 0 16px;
+  border-radius: 99em;
+  color: var(--c);
+  white-space: nowrap;
+  transition: all 160ms;
+
+  &:hover {
+    --c: var(--c-action);
+    cursor: pointer;
+  }
+}
+
+@utility liquid-glass-nav-option-active {
+  --c: var(--c-action);
+  cursor: auto;
+
+  & svg {
+    filter: drop-shadow(
+      0 1px 1.5px color-mix(in srgb, var(--c-dark) 45%, transparent)
+    );
+  }
+}
+
+@utility liquid-glass-nav-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  & svg {
+    display: block;
+    width: 26px;
+    height: 26px;
+  }
+}
+
+@utility liquid-glass-nav-indicator {
+  position: absolute;
+  top: 4px;
+  z-index: -1;
+  height: calc(100% - 10px);
+  border-radius: 99em;
+  background-color: color-mix(
+    in srgb,
+    var(--c-light) 3%,
+    color-mix(in srgb, var(--c-glass) 6%, transparent)
+  );
+  box-shadow:
+    inset 0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 10%),
+        transparent
+      ),
+    inset 2px 1px 0 -1px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 90%),
+        transparent
+      ),
+    inset -1.5px -1px 0 -1px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 80%),
+        transparent
+      ),
+    inset -2px -6px 1px -5px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 60%),
+        transparent
+      ),
+    inset -1px 2px 3px -1px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 20%),
+        transparent
+      ),
+    inset 0 -4px 1px -2px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 10%),
+        transparent
+      ),
+    0 3px 6px 0
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 8%),
+        transparent
+      );
+  transition:
+    left 400ms cubic-bezier(1, 0, 0.4, 1),
+    width 400ms cubic-bezier(1, 0, 0.4, 1),
+    background-color 400ms cubic-bezier(1, 0, 0.4, 1),
+    box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
+  animation: var(--animate-glass-squish);
+}
+
+@utility liquid-glass-nav-filter {
+  position: absolute;
+  z-index: -1;
+  width: 0;
+  height: 0;
+}
