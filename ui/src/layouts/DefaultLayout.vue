@@ -5,19 +5,12 @@ import {
   HomeIcon,
   ArrowsRightLeftIcon,
   Squares2X2Icon,
-  UserCircleIcon,
-  ArrowRightStartOnRectangleIcon,
-  SunIcon,
-  MoonIcon,
+  UserCircleIcon
 } from "@heroicons/vue/24/outline"
 import LiquidGlassNav, { type GlassNavItem } from "@/components/LiquidGlassNav.vue"
-import { useAuthStore } from "@/stores/auth"
-import { useThemeStore } from "@/stores/theme"
 
 const route = useRoute()
 const router = useRouter()
-const auth = useAuthStore()
-const themeStore = useThemeStore()
 
 type NavItem = GlassNavItem & { icon: Component }
 
@@ -34,35 +27,10 @@ const current = computed<string | number>({
     router.push({ name: String(name) })
   },
 })
-
-async function onLogout() {
-  await auth.logout()
-  await router.push({ name: "login" })
-}
-
-function toggleTheme() {
-  themeStore.setTheme(themeStore.theme === "dark" ? "light" : "dark")
-}
 </script>
 
 <template>
-  <button class="logout-btn btn btn-outline btn-error" @click="onLogout">
-    <ArrowRightStartOnRectangleIcon class="size-5" />
-    {{ $t("account.logout") }}
-  </button>
-
   <div class="top-bar-right">
-    <label class="swap swap-rotate theme-toggle">
-      <input
-        type="checkbox"
-        :checked="themeStore.theme === 'dark'"
-        aria-label="Toggle theme"
-        @change="toggleTheme"
-      />
-      <SunIcon class="swap-on size-6" />
-      <MoonIcon class="swap-off size-6" />
-    </label>
-
     <div class="brand-badge bg-base-200">Vivery</div>
   </div>
 

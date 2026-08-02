@@ -3,7 +3,7 @@ import { watch } from "vue"
 import { useLocalStorage } from "@vueuse/core"
 
 const DEFAULT_THEME = "dark"
-const THEMES = new Set(["light", "dark"])
+const THEMES = new Set(["emerald", "dark"])
 
 function applyTheme(theme: string) {
   document.documentElement.setAttribute("data-theme", theme)
