@@ -17,9 +17,11 @@
   --c-light: #fff;
   --c-dark: #000;
   --c-content: #fff;
-  --c-action: var(--color-primary, #0052f5);
+  /* Die Akzentfarbe kommt immer vom aktiven DaisyUI-Theme. */
+  --c-action: var(--color-primary);
   --glass-reflex-dark: 1;
   --glass-reflex-light: 1;
+  --glass-shadow-depth: 1;
   --saturation: 150%;
   position: relative;
   z-index: 1;
@@ -37,74 +39,65 @@
   backdrop-filter: blur(8px) url(#liquid-glass-nav) saturate(var(--saturation));
   -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
   box-shadow:
-    inset 0 0 0 1px
+    /* Die obere Kante fängt das Umgebungslicht wie echtes Glas ein. */
+    inset 0 1px 0 0
       color-mix(
         in srgb,
-        var(--c-light) calc(var(--glass-reflex-light) * 10%),
+        var(--c-light) calc(var(--glass-reflex-light) * 58%),
         transparent
       ),
-    inset 1.8px 3px 0 -2px
+    inset 0 -1px 0 0
       color-mix(
         in srgb,
-        var(--c-light) calc(var(--glass-reflex-light) * 90%),
+        var(--c-dark) calc(var(--glass-reflex-dark) * 14%),
         transparent
       ),
-    inset -2px -2px 0 -2px
+    inset 1.5px 2px 4px -3px
       color-mix(
         in srgb,
-        var(--c-light) calc(var(--glass-reflex-light) * 80%),
+        var(--c-light) calc(var(--glass-reflex-light) * 88%),
         transparent
       ),
-    inset -3px -8px 1px -6px
+    inset -2px -4px 8px -6px
       color-mix(
         in srgb,
-        var(--c-light) calc(var(--glass-reflex-light) * 60%),
+        var(--c-dark) calc(var(--glass-reflex-dark) * 54%),
         transparent
       ),
-    inset -0.3px -1px 4px 0
+    0 2px 4px -2px
       color-mix(
         in srgb,
-        var(--c-dark) calc(var(--glass-reflex-dark) * 12%),
+        var(--c-dark) calc(var(--glass-shadow-depth) * 24%),
         transparent
       ),
-    inset -1.5px 2.5px 0 -2px
+    0 12px 26px -16px
       color-mix(
         in srgb,
-        var(--c-dark) calc(var(--glass-reflex-dark) * 20%),
+        var(--c-dark) calc(var(--glass-shadow-depth) * 38%),
         transparent
       ),
-    inset 0 3px 4px -2px
+    0 5px 18px -13px
       color-mix(
         in srgb,
-        var(--c-dark) calc(var(--glass-reflex-dark) * 20%),
-        transparent
-      ),
-    inset 2px -6.5px 1px -4px
-      color-mix(
-        in srgb,
-        var(--c-dark) calc(var(--glass-reflex-dark) * 10%),
-        transparent
-      ),
-    0 1px 5px 0
-      color-mix(
-        in srgb,
-        var(--c-dark) calc(var(--glass-reflex-dark) * 10%),
-        transparent
-      ),
-    0 6px 16px 0
-      color-mix(
-        in srgb,
-        var(--c-dark) calc(var(--glass-reflex-dark) * 8%),
+        var(--c-action) calc(var(--glass-shadow-depth) * 28%),
         transparent
       );
   transition:
     background-color 400ms cubic-bezier(1, 0, 0.4, 1),
     box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
+}
 
-  @media (prefers-color-scheme: dark) {
-    --glass-reflex-dark: 2;
-    --glass-reflex-light: 0.3;
-  }
+/* Die Glasreflexe folgen dem gewählten DaisyUI-Theme, nicht dem System-Theme. */
+[data-theme="dark"] .liquid-glass-nav {
+  --glass-reflex-dark: 1.25;
+  --glass-reflex-light: 0.45;
+  --glass-shadow-depth: 1.15;
+}
+
+[data-theme="emerald"] .liquid-glass-nav {
+  --glass-reflex-dark: 0.75;
+  --glass-reflex-light: 0.9;
+  --glass-shadow-depth: 0.7;
 }
 
 @utility liquid-glass-nav-option {
@@ -134,11 +127,11 @@
   --c: var(--c-action);
   cursor: auto;
 
-  & svg {
+  /* & svg {
     filter: drop-shadow(
       0 1px 1.5px color-mix(in srgb, var(--c-dark) 45%, transparent)
     );
-  }
+  } */
 }
 
 @utility liquid-glass-nav-content {

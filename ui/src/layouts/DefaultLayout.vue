@@ -5,7 +5,7 @@ import {
   HomeIcon,
   ArrowsRightLeftIcon,
   Squares2X2Icon,
-  UserCircleIcon,
+  UserCircleIcon
 } from "@heroicons/vue/24/outline"
 import LiquidGlassNav, { type GlassNavItem } from "@/components/LiquidGlassNav.vue"
 
@@ -30,7 +30,10 @@ const current = computed<string | number>({
 </script>
 
 <template>
-  <div class="brand-badge bg-base-200">Vivery</div>
+  <div class="top-bar-right">
+    <div class="brand-badge bg-base-200">Vivery</div>
+  </div>
+
   <nav class="default-nav">
     <LiquidGlassNav v-model="current" :items="items" aria-label="Main navigation">
       <template #icon="{ item }">
@@ -38,7 +41,7 @@ const current = computed<string | number>({
       </template>
     </LiquidGlassNav>
   </nav>
-  <main class="page-content">
+  <main class="page-content min-h-screen bg-base-300 text-base-content">
     <RouterView />
   </main>
 </template>
@@ -52,11 +55,28 @@ const current = computed<string | number>({
   translate: -50%;
 }
 
-.brand-badge {
+.logout-btn {
+  position: fixed;
+  z-index: 50;
+  top: 12px;
+  left: 20px;
+}
+
+.top-bar-right {
   position: fixed;
   z-index: 50;
   top: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.theme-toggle {
+  cursor: pointer;
+}
+
+.brand-badge {
   display: flex;
   align-items: center;
   justify-content: center;

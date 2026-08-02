@@ -3,16 +3,18 @@
   import { useAuthStore } from '@/stores/auth'
   import { useForm } from 'vee-validate'
   import { toTypedSchema } from '@vee-validate/zod'
-  import { loginSchema } from '@/schemas/account'
+  import { useI18n } from 'vue-i18n'
+  import { createLoginSchema } from '@/schemas/account'
   import { ref } from 'vue'
   import { toast } from 'vue-sonner'
 
   const router = useRouter()
   const route = useRoute()
   const auth = useAuthStore()
+  const { t } = useI18n()
 
   const { handleSubmit, defineField } = useForm({
-    validationSchema: toTypedSchema(loginSchema),
+    validationSchema: toTypedSchema(createLoginSchema(t)),
   })
 
   const [username, usernameAttrs] = defineField('username')
@@ -26,8 +28,8 @@
       await auth.login(values)
       const redirect = route.query.redirect as string | undefined
       await router.push(redirect ?? '/')
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Error while logging in')
+    } catch {
+      toast.error(t('misc.loginError'))
     } finally {
       loading.value = false
     }
@@ -35,8 +37,8 @@
 </script>
 
 <template>
-  <main class="flex min-h-screen w-screen items-center justify-center bg-base-100 p-4 text-base-content sm:p-8 lg:items-stretch lg:justify-between lg:gap-10 lg:p-15">
-    <section class="flex min-h-[calc(100vh-2rem)] w-full flex-col items-center justify-center gap-12 rounded-box bg-base-200 p-6 sm:min-h-[calc(100vh-4rem)] sm:p-10 lg:min-h-0 lg:w-100 lg:gap-30 lg:p-15 shadow-[15px_15px_rgba(0,0,0,0.25)]">
+  <main class="flex min-h-screen w-screen items-center justify-center bg-base-300 p-4 text-base-content sm:p-8 lg:items-stretch lg:justify-between lg:gap-10 lg:p-15">
+    <section class="flex min-h-[calc(100vh-2rem)] w-full flex-col items-center justify-center gap-12 rounded-box bg-base-100 p-6 sm:min-h-[calc(100vh-4rem)] sm:p-10 lg:min-h-0 lg:w-100 lg:gap-30 lg:p-15 shadow-[15px_15px_rgba(0,0,0,0.25)]">
       <header class="w-full text-center">
         <h1 class="text-2xl font-bold text-shadow-[5px_5px_rgb(0_0_0/0.25)]">Vivery v0.0.1-alpha</h1>
       </header>
