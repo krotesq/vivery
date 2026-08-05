@@ -20,6 +20,30 @@
     "deactivateAccount": "Account deaktivieren"
   },
 
+  "streaming": {
+    "source": "Source",
+    "target": "Target",
+    "searchPlaceholder": "Suchen",
+    "addSource": "Source hinzufügen",
+    "editSource": "Source bearbeiten",
+    "addTarget": "Target hinzufügen",
+    "editTarget": "Target bearbeiten",
+    "name": "Name",
+    "namePlaceholder": "Gib einen Namen ein",
+    "streamLink": "Stream Link",
+    "streamLinkPlaceholder": "rtmp://example.com/live/stream",
+    "streamKey": "Stream Key",
+    "streamKeyPlaceholder": "z.B. a1b2c3d4e5f6g7h8",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "confirmDelete": "«{title}» löschen?",
+    "created": "Erstellt",
+    "updated": "Gespeichert",
+    "deleted": "Gelöscht"
+  },
+
   "misc": {
     "loading": "Laden",
     "loginError": "Fehler beim Einloggen"
