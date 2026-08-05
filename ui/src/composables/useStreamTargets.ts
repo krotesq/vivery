@@ -7,28 +7,14 @@ function makeStreamTarget(input: StreamTargetInput): StreamTarget {
   return {
     id: crypto.randomUUID(),
     name: input.name,
-    type: "rtmp",
     streamLink: input.streamLink,
     streamKey: input.streamKey,
-    createdAt: new Date().toISOString(),
   }
 }
 
 // Module-scoped so state survives navigation within the SPA (mock only).
-const sources = ref<StreamTarget[]>([
-  makeStreamTarget({
-    name: "Titel der Source",
-    streamLink: "rtmp://example.com/live/stream",
-    streamKey: "a1b2c3d4e5f6g7h8",
-  }),
-])
-const targets = ref<StreamTarget[]>([
-  makeStreamTarget({
-    name: "Titel der Target",
-    streamLink: "rtmp://example.com/live/stream",
-    streamKey: "a1b2c3d4e5f6g7h8",
-  }),
-])
+const sources = ref<StreamTarget[]>([])
+const targets = ref<StreamTarget[]>([])
 
 export function useStreamTargets() {
   const { t } = useI18n()
